@@ -1,0 +1,25 @@
+{% block content %}
+<div class="profile-container">
+    <div class="profile-info">
+        <img src="{{ user.profile.avatar.url }}" alt="Аватар" class="profile-avatar">
+        <h1>Профиль {{ user.username }}</h1>
+        <p>Имя: {{ user.first_name }} {{ user.last_name }}</p>
+        <p>Email: {{ user.email }}</p>
+
+        <h2>Дополнительная информация:</h2>
+        <p>Дата создания профиля: {{ profile.created_at }}</p>
+        <p>Биография: {{ profile.bio }}</p>
+        <p>Дата рождения: {{ profile.birth_date }}</p>
+            {% if user.profile.is_online %}
+                🟢 Онлайн
+            {% else %}
+                🔴 Офлайн (останній візит: {{ user.profile.last_seen|date:"d.m.Y H:i" }})
+            {% endif %}
+        </p>
+    </div>
+
+    {% if request.user == user %}
+        <a href="{% url 'edit_profile' username=user.username %}" class="btn btn-primary">Редагувати профіль</a>
+    {% endif %}
+</div>
+{% endblock %}
