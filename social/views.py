@@ -1,9 +1,11 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from .forms import CommentForm, ProfileUpdateForm, PostForm
 from django.contrib.auth.models import User
-from .models import Post, Profile
+from .models import Like, Post, Profile, Comment
 from django.contrib.auth.decorators import login_required
-
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.views.generic import View
+from django.http import JsonResponse
 # Create your views here.
 
 def edit_profile(request, username):
@@ -67,11 +69,28 @@ def post_detail(request, post_id):
         'form': form,
     })
 
-
-
 @login_required
 def delete_post(request, post_id):
     post = get_object_or_404(Post, id=post_id)
     if request.user == post.author:
         post.delete()
     return redirect('profile', username=request.user.username)
+
+class CommentLikeToggle(View):
+    def post(self, request, *args, **kwargs):
+        comment = get_object_or_404(Comment, pk=self.kwargs.get('pk'))
+        like_qs = Like.objects.filter(comment=comment, user=request.user)
+        
+        if like_qs.exists():
+            like_qs.delete()
+            liked = False
+        else:
+            Like.objects.create(comment=comment, user=request.user)
+            liked = True
+
+        like_count = comment.comment_likes.count()
+
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({"liked": liked, "like_count": like_count})
+        
+        return redirect(request.META.get('HTTP_REFERER', '/'))

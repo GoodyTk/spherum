@@ -59,6 +59,13 @@
                     <div class="comment">
                         <p><strong>{{ comment.author.username }}</strong> ({{ comment.created_at|date:"d.m.Y H:i" }})</p>
                         <p>{{ comment.content }}</p>
+
+                        <form action="{% url 'comment-like-toggle' comment.id %}" method="post" class="like-form" id="like-form-{{ comment.id }}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm {% if request.user in comment.comment_likes.all %}btn-success{% else %}btn-outline-success{% endif %}" id="like-btn-{{ comment.id }}">
+                                Лайк {{ comment.comment_likes.count }}
+                            </button>
+                        </form>
                     </div>
                 {% endfor %}
             </div>
@@ -79,6 +86,39 @@
             toggleBtn.textContent = "Показать комментарии";
         }
     }
+
+    {% for comment in post.comments.all %}
+        document.getElementById("like-form-{{ comment.id }}").addEventListener("submit", function(event) {
+
+
+            let form = this;
+            let btn = form.querySelector("button");
+
+            fetch(form.action, {
+                method: "POST",
+                headers: {
+                    "X-CSRFToken": document.querySelector('[name=csrfmiddlewaretoken]').value
+                },
+                body: new FormData(form)
+            })
+            .then(response => response.json())
+            .then(data => {
+
+                btn.textContent = `Лайк ${data.like_count}`;
+
+                if (data.liked) {
+                    btn.classList.add("btn-success");
+                    btn.classList.remove("btn-outline-success");
+                } else {
+                    btn.classList.add("btn-outline-success");
+                    btn.classList.remove("btn-success");
+                }
+            })
+            .catch(error => {
+                console.error("Ошибка при обработке лайка:", error);
+            });
+        });
+    {% endfor %}
 </script>
 
 {% endblock %}
