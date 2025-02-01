@@ -1,0 +1,11 @@
+{% block content %}
+<div class="container">
+    <h2>Создать публикацию</h2>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-success">Опубликовать</button>
+    </form>
+    <a href="{% url 'profile' user.username %}" class="btn btn-secondary">Отмена</a>
+</div>
+{% endblock %}

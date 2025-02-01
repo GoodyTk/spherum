@@ -1,0 +1,108 @@
+{% block content %}
+<div class="post-detail-container">
+    <h1>{{ post.title }}</h1>
+    <p class="post-author"><strong>Автор:</strong> {{ post.author.username }}</p>
+    <p class="post-content">{{ post.content }}</p>
+
+    <h2>Комментарии</h2>
+    {% for comment in comments %}
+        <div class="comment">
+            <p><strong>{{ comment.author.username }}</strong>: {{ comment.content }}</p>
+        </div>
+    {% empty %}
+        <p>Комментариев пока нет.</p>
+    {% endfor %}
+
+    <h3>Добавить комментарий</h3>
+    <form method="POST">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn-submit">Добавить комментарий</button>
+    </form>
+
+    <a href="{% if request.session.profile_url %}{{ request.session.profile_url }}{% else %}{% url 'social/profile' user_id=request.user.id %}{% endif %}" class="btn-back">Назад</a>
+</div>
+
+<style>
+    body {
+        background-color: #f2f2f2;
+        color: #333;
+        font-family: Arial, sans-serif;
+    }
+
+    .post-detail-container {
+        max-width: 800px;
+        margin: 50px auto;
+        padding: 25px;
+        background-color: #2e2e2e;
+        color: #e1e1e1;
+        border-radius: 10px;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+        text-align: center;
+    }
+
+    h1 {
+        font-size: 2.5rem;
+        color: #f1f1f1;
+        margin-bottom: 20px;
+    }
+
+    .post-author {
+        font-size: 1.4rem;
+        color: #f1f1f1;
+        margin-bottom: 20px;
+    }
+
+    .post-content {
+        font-size: 1.6rem;
+        font-weight: bold;
+        line-height: 1.8;
+        color: #d1d1d1;
+        margin-bottom: 20px;
+        text-align: center;
+    }
+
+    .comment {
+        background-color: #444;
+        margin-bottom: 15px;
+        padding: 12px;
+        border-radius: 8px;
+    }
+
+    .comment strong {
+        color: #f1f1f1;
+    }
+
+    .btn-submit {
+        background-color: #5c9e5c;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        margin-top: 15px;
+    }
+
+    .btn-submit:hover {
+        background-color: #4a7d4a;
+    }
+
+    .btn-back {
+        display: inline-block;
+        margin-top: 20px;
+        color: #66aaff;
+        text-decoration: none;
+        padding: 10px;
+        border-radius: 5px;
+        background-color: #333;
+    }
+
+    .btn-back:hover {
+        background-color: #444;
+    }
+
+    h2, h3 {
+        color: #b3b3b3;
+    }
+</style>
+{% endblock %}

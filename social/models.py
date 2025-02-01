@@ -44,7 +44,7 @@ class Follow(models.Model):
     
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    avatar = models.ImageField(upload_to='avatars/', default='avatars/default.jpg')
+    avatar = models.ImageField(upload_to='avatars/', default='avatars/default.png')
     bio = models.TextField(blank=True)
     birth_date = models.DateField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -55,6 +55,7 @@ class Profile(models.Model):
         return f'Профіль {self.user.username}'
     
     def save(self, *args, **kwargs):
+        
         super().save(*args, **kwargs)
 
         img = Image.open(self.avatar.path)

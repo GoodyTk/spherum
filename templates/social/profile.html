@@ -1,3 +1,5 @@
+{% load static %}
+
 {% block content %}
 <div class="profile-container">
     <div class="profile-info">
@@ -10,16 +12,201 @@
         <p>Дата создания профиля: {{ profile.created_at }}</p>
         <p>Биография: {{ profile.bio }}</p>
         <p>Дата рождения: {{ profile.birth_date }}</p>
+        <p>
             {% if user.profile.is_online %}
                 🟢 Онлайн
             {% else %}
-                🔴 Офлайн (останній візит: {{ user.profile.last_seen|date:"d.m.Y H:i" }})
+                🔴 Офлайн (последний визит: {{ user.profile.last_seen|date:"d.m.Y H:i" }})
             {% endif %}
         </p>
     </div>
 
-    {% if request.user == user %}
-        <a href="{% url 'edit_profile' username=user.username %}" class="btn btn-primary">Редагувати профіль</a>
-    {% endif %}
+    <div class="buttons">
+        <a href="/" class="btn btn-secondary">На главную</a>
+        {% if request.user == user %}
+            <a href="{% url 'edit_profile' username=user.username %}" class="btn btn-primary">Редактировать профиль</a>
+            <a href="{% url 'create_post' %}" class="btn btn-success">Создать публикацию</a>
+        {% endif %}
+    </div>
+
+    <h2>Публикации</h2>
+    {% for post in user.posts.all %}
+        <div class="post">
+            <p><strong>{{ post.author.username }}</strong> ({{ post.created_at|date:"d.m.Y H:i" }})</p>
+            <p>{{ post.content }}</p>
+            {% if post.image %}
+                <img src="{{ post.image.url }}" alt="Изображение поста" class="post-image">
+            {% endif %}
+
+            {% if request.user == post.author %}
+                <form action="{% url 'delete_post' post.id %}" method="post" class="delete-form">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">Удалить</button>
+                </form>
+            {% endif %}
+
+            <div class="comment-actions">
+                <button id="toggle-comments-btn" class="btn btn-info" onclick="toggleComments()">Показать комментарии</button>
+                <form method="post" action="{% url 'post_detail' post.id %}" class="comment-form">
+                    {% csrf_token %}
+                    {{ form.as_p }}
+                    <button type="submit" class="btn btn-primary">Добавить комментарий</button>
+                </form>
+            </div>
+
+            <div id="comments-section" style="display:none;">
+                {% for comment in post.comments.all %}
+                    <div class="comment">
+                        <p><strong>{{ comment.author.username }}</strong> ({{ comment.created_at|date:"d.m.Y H:i" }})</p>
+                        <p>{{ comment.content }}</p>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% endfor %}
 </div>
+
+<script>
+    function toggleComments() {
+        const commentsSection = document.getElementById("comments-section");
+        const toggleBtn = document.getElementById("toggle-comments-btn");
+
+        if (commentsSection.style.display === "none") {
+            commentsSection.style.display = "block";
+            toggleBtn.textContent = "Скрыть комментарии";
+        } else {
+            commentsSection.style.display = "none";
+            toggleBtn.textContent = "Показать комментарии";
+        }
+    }
+</script>
+
 {% endblock %}
+
+<style>
+    body {
+        background-color: #f2f2f2;
+        color: #333;
+        font-family: Arial, sans-serif;
+    }
+
+    .profile-container {
+        width: 80%;
+        max-width: 1000px;
+        margin: 20px auto;
+        padding: 20px;
+        background: #2e2e2e;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        text-align: center;
+    }
+
+    .profile-info {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .profile-avatar {
+        width: 150px;
+        height: 150px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 3px solid #4CAF50;
+        margin-bottom: 20px;
+    }
+
+    .profile-avatar:hover {
+        opacity: 0.9;
+    }
+
+    h1 {
+        font-size: 2.5rem;
+        color: #f1f1f1;
+        margin-bottom: 20px;
+    }
+
+    p {
+        color: #d1d1d1;
+        font-size: 1.2rem;
+    }
+
+    .buttons {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        margin-top: 20px;
+    }
+
+    .btn {
+        padding: 10px 15px;
+        text-decoration: none;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+
+    .btn-secondary { background: gray; color: white; }
+    .btn-primary { background: #007BFF; color: white; }
+    .btn-success { background: #4CAF50; color: white; }
+    .btn-danger { background: #DC3545; color: white; }
+    .btn-info { background: #17A2B8; color: white; }
+
+    .post {
+        background: #444;
+        padding: 15px;
+        margin: 15px auto;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        max-width: 600px;
+        color: #f1f1f1;
+    }
+
+    .post p {
+        font-size: 1.2rem;
+        margin-bottom: 10px;
+    }
+
+    .post-image {
+        max-width: 100%;
+        height: auto;
+        margin-top: 10px;
+    }
+
+    .delete-form {
+        margin-top: 10px;
+    }
+
+    .comment-actions {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 10px;
+    }
+
+    .comment-form {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .comment {
+        background: #555;
+        padding: 10px;
+        margin: 10px 0;
+        border-radius: 8px;
+        color: #e1e1e1;
+    }
+
+    .comment strong {
+        color: #66aaff;
+    }
+
+    .btn:hover {
+        opacity: 0.8;
+    }
+
+    h2 {
+        color: #f1f1f1;
+        margin-top: 30px;
+    }
+</style>
