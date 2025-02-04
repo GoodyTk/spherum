@@ -3,9 +3,9 @@ from .forms import CommentForm, ProfileUpdateForm, PostForm
 from django.contrib.auth.models import User
 from .models import Like, Post, Profile, Comment
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import View
 from django.http import JsonResponse
+from django.urls import reverse_lazy
 # Create your views here.
 
 def edit_profile(request, username):
@@ -94,3 +94,20 @@ class CommentLikeToggle(View):
             return JsonResponse({"liked": liked, "like_count": like_count})
         
         return redirect(request.META.get('HTTP_REFERER', '/'))
+
+class PostLikeToggle(View):
+    def post(self, request, *args, **kwargs):
+        post = get_object_or_404(Post, pk=self.kwargs.get('pk'))
+        like_qs = Like.objects.filter(post=post, user=request.user)
+
+        if like_qs.exists():
+            like_qs.delete()
+            liked = False
+        else:
+            Like.objects.create(post=post, user=request.user)
+            liked = True
+
+        like_count = post.post_likes.count()
+
+        return redirect(request.get_full_path())
+    

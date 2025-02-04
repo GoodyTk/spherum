@@ -30,7 +30,7 @@ class Like(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        unique_together = ('post', 'comment', 'user')
+        unique_together = ('comment', 'user')
 
 class Follow(models.Model):
     follower = models.ForeignKey(User, on_delete=models.CASCADE, related_name='following')

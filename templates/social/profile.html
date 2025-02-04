@@ -45,6 +45,15 @@
                 </form>
             {% endif %}
 
+            <div class="like-section">
+                <form method="post" action="{% url 'post-like-toggle' post.id %}" class="like-form" id="like-form-{{ post.id }}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-sm {% if request.user in post.post_likes.all %}btn-success{% else %}btn-outline-success{% endif %}" id="like-btn-{{ post.id }}">
+                        Лайк {{ post.post_likes.count }}
+                    </button>
+                </form>
+            </div>
+
             <div class="comment-actions">
                 <button id="toggle-comments-btn" class="btn btn-info" onclick="toggleComments()">Показать комментарии</button>
                 <form method="post" action="{% url 'post_detail' post.id %}" class="comment-form">
@@ -87,10 +96,8 @@
         }
     }
 
-    {% for comment in post.comments.all %}
-        document.getElementById("like-form-{{ comment.id }}").addEventListener("submit", function(event) {
-
-
+    {% for post in user.posts.all %}
+        document.getElementById("like-form-{{ post.id }}").addEventListener("submit", function(event) {
             let form = this;
             let btn = form.querySelector("button");
 
@@ -103,7 +110,6 @@
             })
             .then(response => response.json())
             .then(data => {
-
                 btn.textContent = `Лайк ${data.like_count}`;
 
                 if (data.liked) {
