@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.utils.timezone import now
 from PIL import Image
+from django.urls import reverse
 # Create your models here.
 
 class Post(models.Model):
@@ -13,6 +14,9 @@ class Post(models.Model):
 
     def __str__(self):
         return f"{self.author.username}: {self.content[:30]}"
+    
+    def get_absolute_url(self):
+        return reverse('post_detail', kwargs={'pk': self.pk})
     
 class Comment(models.Model):
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='comments')
@@ -31,6 +35,7 @@ class Like(models.Model):
 
     class Meta:
         unique_together = ('comment', 'user')
+
 
 class Follow(models.Model):
     follower = models.ForeignKey(User, on_delete=models.CASCADE, related_name='following')
@@ -51,6 +56,7 @@ class Profile(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     last_seen = models.DateTimeField(default=now)
     is_online = models.BooleanField(default=False)
+    friends = models.ManyToManyField("self", blank=True, symmetrical=False)
 
     def __str__(self):
         return f'Профіль {self.user.username}'
@@ -63,3 +69,16 @@ class Profile(models.Model):
         max_size = (300, 300) 
         img.thumbnail(max_size)
         img.save(self.avatar.path)
+
+class FriendRequest(models.Model):
+    from_user = models.ForeignKey(User, related_name="sent_requests", on_delete=models.CASCADE)
+    to_user = models.ForeignKey(User, related_name="received_requests", on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def accept(self):
+        self.to_user.profile.friends.add(self.from_user.profile)
+        self.from_user.profile.friends.add(self.to_user.profile)
+        self.delete()
+
+    def decline(self):
+        self.delete()

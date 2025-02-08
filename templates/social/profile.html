@@ -26,8 +26,27 @@
         {% if request.user == user %}
             <a href="{% url 'edit_profile' username=user.username %}" class="btn btn-primary">Редактировать профиль</a>
             <a href="{% url 'create_post' %}" class="btn btn-success">Создать публикацию</a>
+        {% else %}
+            {% if user in request.user.profile.friends.all %}
+                <a href="{% url 'remove_friend' user.id %}" class="btn btn-danger">Удалить из друзей</a>
+            {% elif sent_request_exists %}
+                <span class="text-muted">Запрос отправлен</span>
+            {% else %}
+                <a href="{% url 'send_friend_request' user.id %}" class="btn btn-primary">Добавить в друзья</a>
+            {% endif %}
         {% endif %}
     </div>
+
+    {% if request.user == user %}
+        <h2>Входящие запросы в друзья</h2>
+        {% for req in request.user.received_requests.all %}
+            <div>
+                <p>Запрос от {{ req.from_user.username }}</p>
+                <button class="btn btn-success" id="accept-request-{{ req.id }}">Принять</button>
+                <button class="btn btn-danger" id="decline-request-{{ req.id }}">Отклонить</button>
+            </div>
+        {% endfor %}
+    {% endif %}
 
     <h2>Публикации</h2>
     {% for post in user.posts.all %}
@@ -55,7 +74,7 @@
             </div>
 
             <div class="comment-actions">
-                <button id="toggle-comments-btn" class="btn btn-info" onclick="toggleComments()">Показать комментарии</button>
+                <button id="toggle-comments-btn-{{ post.id }}" class="btn btn-info" onclick="toggleComments({{ post.id }})">Показать комментарии</button>
                 <form method="post" action="{% url 'post_detail' post.id %}" class="comment-form">
                     {% csrf_token %}
                     {{ form.as_p }}
@@ -63,12 +82,12 @@
                 </form>
             </div>
 
-            <div id="comments-section" style="display:none;">
+            <div id="comments-section-{{ post.id }}" style="display:none;">
                 {% for comment in post.comments.all %}
                     <div class="comment">
                         <p><strong>{{ comment.author.username }}</strong> ({{ comment.created_at|date:"d.m.Y H:i" }})</p>
                         <p>{{ comment.content }}</p>
-
+            
                         <form action="{% url 'comment-like-toggle' comment.id %}" method="post" class="like-form" id="like-form-{{ comment.id }}">
                             {% csrf_token %}
                             <button type="submit" class="btn btn-sm {% if request.user in comment.comment_likes.all %}btn-success{% else %}btn-outline-success{% endif %}" id="like-btn-{{ comment.id }}">
@@ -83,45 +102,63 @@
 </div>
 
 <script>
-    function toggleComments() {
-        const commentsSection = document.getElementById("comments-section");
-        const toggleBtn = document.getElementById("toggle-comments-btn");
-
-        if (commentsSection.style.display === "none") {
-            commentsSection.style.display = "block";
-            toggleBtn.textContent = "Скрыть комментарии";
-        } else {
-            commentsSection.style.display = "none";
-            toggleBtn.textContent = "Показать комментарии";
-        }
+    function toggleComments(postId) {
+    const commentsContainer = document.getElementById(`comments-section-${postId}`);
+    const toggleButton = document.getElementById(`toggle-comments-btn-${postId}`);
+    
+    if (commentsContainer.style.display === "none") {
+        commentsContainer.style.display = "block";
+        toggleButton.textContent = "Скрыть комментарии";
+    } else {
+        commentsContainer.style.display = "none";
+        toggleButton.textContent = "Показать комментарии";
     }
+}
 
-    {% for post in user.posts.all %}
-        document.getElementById("like-form-{{ post.id }}").addEventListener("submit", function(event) {
-            let form = this;
-            let btn = form.querySelector("button");
+    {% for req in request.user.received_requests.all %}
+        document.getElementById('accept-request-{{ req.id }}').addEventListener('click', function(e) {
+            e.preventDefault();
 
-            fetch(form.action, {
-                method: "POST",
+            fetch('{% url "accept_friend_request" req.id %}', {
+                method: 'GET',
                 headers: {
-                    "X-CSRFToken": document.querySelector('[name=csrfmiddlewaretoken]').value
-                },
-                body: new FormData(form)
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                }
             })
             .then(response => response.json())
             .then(data => {
-                btn.textContent = `Лайк ${data.like_count}`;
-
-                if (data.liked) {
-                    btn.classList.add("btn-success");
-                    btn.classList.remove("btn-outline-success");
+                if (data.status === 'success') {
+                    document.getElementById('accept-request-{{ req.id }}').textContent = "Запрос принят";
+                    document.getElementById('accept-request-{{ req.id }}').disabled = true;
                 } else {
-                    btn.classList.add("btn-outline-success");
-                    btn.classList.remove("btn-success");
+                    alert('Ошибка при принятии запроса');
                 }
             })
             .catch(error => {
-                console.error("Ошибка при обработке лайка:", error);
+                console.error("Ошибка при принятии запроса:", error);
+            });
+        });
+
+        document.getElementById('decline-request-{{ req.id }}').addEventListener('click', function(e) {
+            e.preventDefault();
+
+            fetch('{% url "decline_friend_request" req.id %}', {
+                method: 'GET',
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    document.getElementById('decline-request-{{ req.id }}').textContent = "Запрос отклонён";
+                    document.getElementById('decline-request-{{ req.id }}').disabled = true;
+                } else {
+                    alert('Ошибка при отклонении запроса');
+                }
+            })
+            .catch(error => {
+                console.error("Ошибка при отклонении запроса:", error);
             });
         });
     {% endfor %}
