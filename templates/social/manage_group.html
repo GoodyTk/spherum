@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Управление группой: {{ group.name }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        header {
+            background-color: #4CAF50;
+            color: white;
+            width: 100%;
+            padding: 15px 0;
+            text-align: center;
+        }
+
+        .container {
+            width: 80%;
+            max-width: 900px;
+            margin: 20px 0;
+            padding: 20px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+
+        form {
+            margin: 20px 0;
+        }
+
+        label {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        input, textarea, select {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            font-size: 16px;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 5px;
+            border: none;
+            margin-top: 10px;
+        }
+
+        .btn-primary {
+            background-color: #007BFF;
+            color: white;
+        }
+
+        .btn-success {
+            background-color: #28A745;
+            color: white;
+        }
+
+        .btn-danger {
+            background-color: #DC3545;
+            color: white;
+        }
+
+        .btn-secondary {
+            background-color: #6C757D;
+            color: white;
+            text-decoration: none;
+        }
+
+        .btn-secondary:hover {
+            background-color: #5a6268;
+        }
+
+        ul {
+            padding-left: 20px;
+            list-style-type: none;
+        }
+
+        li {
+            margin: 10px 0;
+        }
+
+        hr {
+            margin: 30px 0;
+        }
+
+        .form-section {
+            margin-bottom: 30px;
+        }
+
+        .center-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Управление группой: {{ group.name }}</h1>
+</header>
+
+<div class="container">
+    <div class="form-section">
+        <h2>Редактирование группы</h2>
+        <form method="POST">
+            {% csrf_token %}
+            <label>Название группы:</label>
+            <input type="text" name="name" value="{{ group.name }}" required><br><br>
+
+            <label>Описание:</label>
+            <textarea name="description" required>{{ group.description }}</textarea><br><br>
+
+            <div class="center-buttons">
+                <button type="submit" name="action" value="update" class="btn btn-primary">Сохранить изменения</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="form-section">
+        <h2>Администраторы</h2>
+        <ul>
+            {% for admin in admins %}
+                <li>
+                    {{ admin.username }}
+                    <form method="POST" style="display:inline;">
+                        {% csrf_token %}
+                        <input type="hidden" name="admin" value="{{ admin.id }}">
+                        <div class="center-buttons">
+                            <button type="submit" name="action" value="remove_admin" class="btn btn-danger">Удалить</button>
+                        </div>
+                    </form>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <div class="form-section">
+        <h2>Добавить администратора</h2>
+        <form method="POST">
+            {% csrf_token %}
+            <select name="admin">
+                {% for user in users %}
+                    <option value="{{ user.id }}">{{ user.username }}</option>
+                {% endfor %}
+            </select>
+            <div class="center-buttons">
+                <button type="submit" name="action" value="add_admin" class="btn btn-success">Добавить</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="form-section">
+        <hr>
+        <form method="POST">
+            {% csrf_token %}
+            <div class="center-buttons">
+                <button type="submit" name="action" value="delete" class="btn btn-danger">Удалить группу</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="form-section">
+        <br>
+        <div class="center-buttons">
+            <a href="{% url 'group_detail' group_id=group.id %}" class="btn btn-secondary">Вернуться назад</a>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

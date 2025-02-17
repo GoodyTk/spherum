@@ -9,6 +9,18 @@
       </div>
     {% endif %}
     
+    {% if user == group.owner or user in group.admins.all %}
+      <a href="{% url 'create_poll' group_id=group.id %}" class="btn btn-primary">Создать опрос</a>
+    {% endif %}
+
+    {% if user == group.owner or user in group.admins.all %}
+      <a href="{% url 'create_group_post' group_id=group.id %}" class="btn btn-primary">Создать пост</a>
+    {% endif %}
+
+    {% if user == group.owner %}
+      <a href="{% url 'manage_group' id=group.id %}" class="btn btn-warning">Управление</a>
+    {% endif %}
+
     <h2>Посты в паблике:</h2>
     <div class="posts-container">
       {% for post in group.posts.all %}

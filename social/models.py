@@ -127,6 +127,7 @@ class PublicGroup(models.Model):
     name = models.CharField(max_length=255)
     description = models.TextField()
     owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='owned_groups')
+    admins = models.ManyToManyField(User, related_name="admin_groups", blank=True)
     cover_image = models.ImageField(upload_to='group_covers/', null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 

@@ -262,3 +262,38 @@ def my_groups(request):
     
     groups = PublicGroup.objects.filter(owner=request.user)
     return render(request, 'social/my_groups.html', {'groups': groups})
+
+@login_required
+def manage_group(request, id):
+    group = get_object_or_404(PublicGroup, id=id)
+    
+    if request.user != group.owner:
+        return redirect("group_detail", group_id=group.id)
+    
+    if request.method == "POST":
+        action = request.POST.get("action")
+
+        if action == "update":
+            group.name = request.POST.get("name")
+            group.description = request.POST.get("description")
+            group.save()
+        elif action == "delete":
+            group.delete()
+            return redirect('my_groups')  
+        elif action == "add_admin":
+            admin_id = request.POST.get("admin")
+            new_admin = User.objects.get(id=admin_id)
+            group.admins.add(new_admin)
+        elif action == "remove_admin":
+            admin_id = request.POST.get("admin")
+            remove_admin = User.objects.get(id=admin_id)
+            group.admins.remove(remove_admin)
+
+    admins = group.admins.all()
+    users = User.objects.exclude(id=group.owner.id)  
+
+    return render(request, 'social/manage_group.html', {
+        'group': group,
+        'admins': admins,
+        'users': users,
+    })

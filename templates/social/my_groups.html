@@ -6,7 +6,9 @@
             <ul class="group-list">
                 {% for group in groups %}
                     <li class="group-item">
-                        <h2>{{ group.name }}</h2>
+                        <h2>
+                            <a href="{% url 'group_detail' group_id=group.id %}">{{ group.name }}</a>
+                        </h2>
                         <p>{{ group.description }}</p>
                     </li>
                 {% endfor %}
@@ -14,7 +16,6 @@
         {% else %}
             <p>У вас нет групп.</p>
         {% endif %}
-
         <div class="buttons">
             <a href="{% url 'index' %}" class="btn btn-secondary">Вернуться назад</a>
         </div>
@@ -50,7 +51,16 @@
         .group-item h2 {
             margin: 0;
             font-size: 1.5rem;
-            color: #333;
+            color: #007BFF;
+        }
+        .group-item h2 a {
+            text-decoration: none;
+            color: #007BFF;
+            transition: 0.3s;
+        }
+        .group-item h2 a:hover {
+            color: #0056b3;
+            text-decoration: underline;
         }
         .group-item p {
             font-size: 1rem;
