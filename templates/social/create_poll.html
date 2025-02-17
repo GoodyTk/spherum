@@ -1,0 +1,117 @@
+{% load static %}
+
+{% block content %}
+    <div class="poll-container">
+        <h1>Создать новый опрос</h1>
+
+        <form method="post" class="poll-form">
+            {% csrf_token %}
+            <div class="form-group">
+                {{ poll_form.as_p }}
+            </div>
+
+            <h3>Варианты ответов</h3>
+            <div id="choices" class="choices-container">
+                <input type="text" name="choices[]" required class="choice-input">
+            </div>
+            <button type="button" class="btn btn-secondary" onclick="addChoice()">Добавить вариант</button>
+
+            <br><br>
+            <button type="submit" class="btn btn-primary">Создать опрос</button>
+        </form>
+    </div>
+
+    <script>
+        function addChoice() {
+            let div = document.getElementById('choices');
+            let input = document.createElement('input');
+            input.type = 'text';
+            input.name = 'choices[]';
+            input.classList.add('choice-input'); // Apply styling to new input fields
+            div.appendChild(document.createElement('br'));
+            div.appendChild(input);
+        }
+    </script>
+
+{% endblock %}
+
+<style>
+    body {
+        background-color: #f2f2f2;
+        color: #333;
+        font-family: Arial, sans-serif;
+    }
+
+    .poll-container {
+        width: 80%;
+        max-width: 900px;
+        margin: 20px auto;
+        padding: 20px;
+        background-color: #ffffff;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    h1 {
+        font-size: 2.5rem;
+        color: #333;
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    .poll-form {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        margin-top: 20px;
+    }
+
+    .form-group {
+        margin-bottom: 15px;
+    }
+
+    .form-group input, .form-group select, .form-group textarea {
+        width: 100%;
+        padding: 10px;
+        border-radius: 5px;
+        border: 1px solid #ddd;
+        font-size: 1rem;
+    }
+
+    .choices-container {
+        margin-top: 15px;
+    }
+
+    .choice-input {
+        width: 100%;
+        padding: 10px;
+        border-radius: 5px;
+        border: 1px solid #ddd;
+        margin-bottom: 10px;
+    }
+
+    .btn {
+        padding: 10px 20px;
+        border-radius: 5px;
+        font-size: 1rem;
+        text-decoration: none;
+        color: white;
+        border: none;
+    }
+
+    .btn-primary {
+        background-color: #4CAF50;
+    }
+
+    .btn-primary:hover {
+        background-color: #45a049;
+    }
+
+    .btn-secondary {
+        background-color: #ccc;
+    }
+
+    .btn-secondary:hover {
+        background-color: #b3b3b3;
+    }
+</style>

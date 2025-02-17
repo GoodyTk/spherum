@@ -5,13 +5,13 @@
     <div class="profile-info">
         <img src="{{ user.profile.avatar.url }}" alt="Аватар" class="profile-avatar">
         <h1>Профиль {{ user.username }}</h1>
-        <p>Имя: {{ user.first_name }} {{ user.last_name }}</p>
-        <p>Email: {{ user.email }}</p>
+        <p><strong>Имя:</strong> {{ user.first_name }} {{ user.last_name }}</p>
+        <p><strong>Email:</strong> {{ user.email }}</p>
 
-        <h2>Дополнительная информация:</h2>
-        <p>Дата создания профиля: {{ profile.created_at }}</p>
-        <p>Биография: {{ profile.bio }}</p>
-        <p>Дата рождения: {{ profile.birth_date }}</p>
+        <h2 class="section-title">Дополнительная информация:</h2>
+        <p><strong>Дата создания профиля:</strong> {{ profile.created_at }}</p>
+        <p><strong>Биография:</strong> {{ profile.bio }}</p>
+        <p><strong>Дата рождения:</strong> {{ profile.birth_date }}</p>
         <p>
             {% if user.profile.is_online %}
                 🟢 Онлайн
@@ -26,6 +26,7 @@
         {% if request.user == user %}
             <a href="{% url 'edit_profile' username=user.username %}" class="btn btn-primary">Редактировать профиль</a>
             <a href="{% url 'create_post' %}" class="btn btn-success">Создать публикацию</a>
+            <a href="{% url 'create_poll' %}" class="btn btn-success">Создать голосование</a>  <!-- Кнопка для создания опроса -->
         {% else %}
             {% if user in request.user.profile.friends.all %}
                 <a href="{% url 'remove_friend' user.id %}" class="btn btn-danger">Удалить из друзей</a>
@@ -38,9 +39,9 @@
     </div>
 
     {% if request.user == user %}
-        <h2>Входящие запросы в друзья</h2>
+        <h2 class="section-title">Входящие запросы в друзья</h2>
         {% for req in request.user.received_requests.all %}
-            <div>
+            <div class="request">
                 <p>Запрос от {{ req.from_user.username }}</p>
                 <button class="btn btn-success" id="accept-request-{{ req.id }}">Принять</button>
                 <button class="btn btn-danger" id="decline-request-{{ req.id }}">Отклонить</button>
@@ -48,11 +49,21 @@
         {% endfor %}
     {% endif %}
 
-    <h2>Публикации</h2>
+    <h2 class="section-title">Мои опросы</h2>
+    <ul class="poll-list">
+        {% for poll in user.polls.all %}
+            <li>
+                <center><a href="{% url 'poll_detail' poll.id %}" class="poll-link">{{ poll.question }}</a></center> <!-- Ссылка на детальную страницу опроса -->
+            </li>
+        {% endfor %}
+    </ul>
+
+    <h2 class="section-title">Публикации</h2>
     {% for post in user.posts.all %}
         <div class="post">
-            <p><strong>{{ post.author.username }}</strong> ({{ post.created_at|date:"d.m.Y H:i" }})</p>
-            <p>{{ post.content }}</p>
+            <p class="post-title"><strong>{{ post.author.username }}</strong> ({{ post.created_at|date:"d.m.Y H:i" }})</p>
+            <p class="post-content">{{ post.content }}</p>
+
             {% if post.image %}
                 <img src="{{ post.image.url }}" alt="Изображение поста" class="post-image">
             {% endif %}
@@ -103,17 +114,17 @@
 
 <script>
     function toggleComments(postId) {
-    const commentsContainer = document.getElementById(`comments-section-${postId}`);
-    const toggleButton = document.getElementById(`toggle-comments-btn-${postId}`);
-    
-    if (commentsContainer.style.display === "none") {
-        commentsContainer.style.display = "block";
-        toggleButton.textContent = "Скрыть комментарии";
-    } else {
-        commentsContainer.style.display = "none";
-        toggleButton.textContent = "Показать комментарии";
+        const commentsContainer = document.getElementById(`comments-section-${postId}`);
+        const toggleButton = document.getElementById(`toggle-comments-btn-${postId}`);
+        
+        if (commentsContainer.style.display === "none") {
+            commentsContainer.style.display = "block";
+            toggleButton.textContent = "Скрыть комментарии";
+        } else {
+            commentsContainer.style.display = "none";
+            toggleButton.textContent = "Показать комментарии";
+        }
     }
-}
 
     {% for req in request.user.received_requests.all %}
         document.getElementById('accept-request-{{ req.id }}').addEventListener('click', function(e) {
@@ -181,13 +192,13 @@
         background: #2e2e2e;
         border-radius: 10px;
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        text-align: center;
     }
 
     .profile-info {
         display: flex;
         flex-direction: column;
         align-items: center;
+        margin-bottom: 30px;
     }
 
     .profile-avatar {
@@ -199,97 +210,104 @@
         margin-bottom: 20px;
     }
 
-    .profile-avatar:hover {
-        opacity: 0.9;
-    }
-
     h1 {
         font-size: 2.5rem;
         color: #f1f1f1;
         margin-bottom: 20px;
+        text-align: center;
+    }
+
+    h2.section-title {
+        font-size: 1.8rem;
+        font-weight: bold;
+        color: #fff;
+        margin-top: 30px;
+        text-align: center;
     }
 
     p {
         color: #d1d1d1;
         font-size: 1.2rem;
+        margin: 5px 0;
     }
 
     .buttons {
         display: flex;
         justify-content: center;
-        gap: 10px;
+        gap: 15px;
         margin-top: 20px;
+        margin-bottom: 20px;
     }
 
     .btn {
-        padding: 10px 15px;
-        text-decoration: none;
-        border: none;
+        padding: 10px 20px;
         border-radius: 5px;
-        cursor: pointer;
-    }
-
-    .btn-secondary { background: gray; color: white; }
-    .btn-primary { background: #007BFF; color: white; }
-    .btn-success { background: #4CAF50; color: white; }
-    .btn-danger { background: #DC3545; color: white; }
-    .btn-info { background: #17A2B8; color: white; }
-
-    .post {
-        background: #444;
-        padding: 15px;
-        margin: 15px auto;
-        border-radius: 8px;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        max-width: 600px;
-        color: #f1f1f1;
-    }
-
-    .post p {
-        font-size: 1.2rem;
-        margin-bottom: 10px;
-    }
-
-    .post-image {
-        max-width: 100%;
-        height: auto;
-        margin-top: 10px;
-    }
-
-    .delete-form {
-        margin-top: 10px;
-    }
-
-    .comment-actions {
-        display: flex;
-        justify-content: space-between;
-        margin-top: 10px;
-    }
-
-    .comment-form {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
-
-    .comment {
-        background: #555;
-        padding: 10px;
-        margin: 10px 0;
-        border-radius: 8px;
-        color: #e1e1e1;
-    }
-
-    .comment strong {
-        color: #66aaff;
+        text-decoration: none;
+        font-size: 1rem;
+        color: white;
+        background-color: #4CAF50;
+        border: none;
     }
 
     .btn:hover {
-        opacity: 0.8;
+        background-color: #45a049;
     }
 
-    h2 {
-        color: #f1f1f1;
-        margin-top: 30px;
+    .post {
+        background-color: #fff;
+        padding: 15px;
+        margin-top: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        text-align: center;
+    }
+
+    .post-title {
+        font-size: 1.5rem;
+        font-weight: bold;
+        margin-bottom: 10px;
+        color: #333;
+    }
+
+    .post-content {
+        font-size: 1.2rem;
+        color: #444;
+        margin-bottom: 20px;
+    }
+
+    .post img {
+        max-width: 100%;
+        border-radius: 8px;
+        margin-bottom: 15px;
+    }
+
+    .like-section, .comment-actions {
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+        margin-top: 10px;
+    }
+
+    .comment {
+        background-color: #fafafa;
+        padding: 10px;
+        border-radius: 8px;
+        margin-top: 10px;
+    }
+
+    .poll-list {
+        padding-left: 0;
+        list-style-type: none;
+        margin-top: 10px;
+    }
+
+    .poll-link {
+        color: #4CAF50;
+        text-decoration: none;
+        font-size: 1.2rem;
+    }
+
+    .poll-link:hover {
+        text-decoration: underline;
     }
 </style>

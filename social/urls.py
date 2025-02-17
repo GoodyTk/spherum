@@ -13,5 +13,13 @@ urlpatterns = [
     path('send_request/<int:user_id>/', views.send_friend_request, name='send_friend_request'),
     path('accept_request/<int:request_id>/', views.accept_friend_request, name='accept_friend_request'),
     path('decline_request/<int:request_id>/', views.decline_friend_request, name='decline_friend_request'),
-    path('remove_friend/<int:user_id>/', views.remove_friend, name='remove_friend')
+    path('remove_friend/<int:user_id>/', views.remove_friend, name='remove_friend'),
+    path("", views.PollListView.as_view(), name="poll_list"),
+    path("<int:pk>/", views.PollDetailView.as_view(), name="poll_detail"),
+    path("<int:poll_id>/vote/", views.vote, name="vote"),
+    path('create_pool/', views.create_poll, name='create_poll'),
+    path('create_group/', views.create_group, name='create_group'),
+    path('group/<int:group_id>/', views.group_detail, name='group_detail'),
+    path('group/<int:group_id>/create_post/', views.create_group_post, name='create_group_post'),
+    path('my_groups/', views.my_groups, name='my_groups'),
 ]

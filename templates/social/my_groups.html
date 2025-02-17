@@ -1,0 +1,80 @@
+{% block content %}
+    <div class="container">
+        <h1>Мои группы</h1>
+        
+        {% if groups %}
+            <ul class="group-list">
+                {% for group in groups %}
+                    <li class="group-item">
+                        <h2>{{ group.name }}</h2>
+                        <p>{{ group.description }}</p>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>У вас нет групп.</p>
+        {% endif %}
+
+        <div class="buttons">
+            <a href="{% url 'index' %}" class="btn btn-secondary">Вернуться назад</a>
+        </div>
+    </div>
+{% endblock %}
+
+{% block extra_css %}
+    <style>
+        .container {
+            width: 80%;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            font-size: 2rem;
+            color: #333;
+        }
+        .group-list {
+            list-style-type: none;
+            padding: 0;
+        }
+        .group-item {
+            background-color: #f9f9f9;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+        }
+        .group-item h2 {
+            margin: 0;
+            font-size: 1.5rem;
+            color: #333;
+        }
+        .group-item p {
+            font-size: 1rem;
+            color: #666;
+        }
+        .buttons {
+            margin-top: 20px;
+        }
+        .btn {
+            padding: 10px 20px;
+            margin: 5px;
+            font-size: 16px;
+            border-radius: 5px;
+            text-decoration: none;
+            display: inline-block;
+            cursor: pointer;
+        }
+        .btn-secondary {
+            background-color: #6C757D;
+            color: white;
+            border: none;
+        }
+        .btn-secondary:hover {
+            background-color: #5a6268;
+        }
+    </style>
+{% endblock %}

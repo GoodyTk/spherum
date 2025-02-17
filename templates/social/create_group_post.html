@@ -1,0 +1,73 @@
+<h1>Создать пост в паблике {{ group.name }}</h1>
+
+<form method="POST" enctype="multipart/form-data" class="create-post-form">
+    {% csrf_token %}
+    
+    <textarea name="content" rows="4" cols="50" placeholder="Что у вас на уме?" required class="content-textarea"></textarea><br><br>
+    
+    <label for="image" class="image-label">Добавить изображение (необязательно):</label>
+    <input type="file" name="image" accept="image/*" class="image-input"><br><br>
+    
+    <button type="submit" class="submit-button">Создать пост</button>
+</form>
+
+<style>
+    .create-post-form {
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: #f9f9f9;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    h1 {
+        font-size: 2rem;
+        color: #333;
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    .content-textarea {
+        width: 100%;
+        padding: 10px;
+        font-size: 1rem;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        resize: vertical;
+        margin-bottom: 20px;
+    }
+
+    .image-label {
+        font-size: 1rem;
+        color: #333;
+        margin-bottom: 10px;
+        display: block;
+    }
+
+    .image-input {
+        width: 100%;
+        padding: 10px;
+        font-size: 1rem;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        margin-bottom: 20px;
+    }
+
+    .submit-button {
+        padding: 10px 20px;
+        border-radius: 5px;
+        background-color: #4CAF50;
+        color: white;
+        font-size: 1rem;
+        text-align: center;
+        border: none;
+        cursor: pointer;
+        display: block;
+        width: 100%;
+    }
+
+    .submit-button:hover {
+        background-color: #45a049;
+    }
+</style>

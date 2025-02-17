@@ -1,11 +1,11 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from .forms import CommentForm, ProfileUpdateForm, PostForm
+from .forms import CommentForm, PollCommentForm, PollForm, ProfileUpdateForm, PostForm, PublicGroupForm
 from django.contrib.auth.models import User
-from .models import FriendRequest, Like, Post, Profile, Comment
+from .models import Choice, FriendRequest, GroupPost, Like, Poll, Post, Profile, Comment, PublicGroup, Vote
 from django.contrib.auth.decorators import login_required
 from django.views.generic import View
 from django.http import JsonResponse, HttpResponseRedirect
-
+from django.views.generic import ListView, DetailView
 # Create your views here.
 
 def edit_profile(request, username):
@@ -105,12 +105,8 @@ class PostLikeToggle(View):
 
         if like_qs.exists():
             like_qs.delete()
-            #liked = False
         else:
             Like.objects.create(post=post, user=request.user)
-            #liked = True
-
-        #like_count = post.post_likes.count()
 
         return HttpResponseRedirect(post.get_absolute_url())
     
@@ -153,3 +149,116 @@ def remove_friend(request, user_id):
 
     return redirect('profile', user_id=request.user.id)
 
+class PollListView(ListView):
+    model = Poll
+    template_name = "social/poll_list.html"
+    context_object_name = "polls"
+
+class PollDetailView(DetailView):
+    model = Poll
+    template_name = "social/poll_detail.html"
+    context_object_name = "poll"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = self.request.user
+
+        if user.is_authenticated:
+            context["has_voted"] = self.object.votes.filter(user=user).exists()
+            context["comment_form"] = PollCommentForm()  
+            context["comments"] = self.object.poll_comments.all() 
+        else:
+            context["has_voted"] = False  
+
+        return context
+
+    def post(self, request, *args, **kwargs):
+        poll = self.get_object()
+        if request.user.is_authenticated:
+            form = PollCommentForm(request.POST)
+            if form.is_valid():
+                comment = form.save(commit=False)
+                comment.poll = poll  
+                comment.author = request.user 
+                comment.save()
+            return redirect('poll_detail', pk=poll.pk)  
+        return super().post(request, *args, **kwargs)
+
+@login_required
+def vote(request, poll_id):
+    poll = get_object_or_404(Poll, id=poll_id)
+    
+    if Vote.objects.filter(user=request.user, poll=poll).exists():
+        return redirect("poll_detail", pk=poll_id) 
+    
+    choice_id = request.POST.get("choice")
+    choice = get_object_or_404(Choice, id=choice_id, poll=poll)
+    
+    Vote.objects.create(user=request.user, poll=poll, choice=choice)
+    
+    choice.votes += 1
+    choice.save()
+    
+    return redirect("poll_detail", pk=poll_id)
+
+@login_required
+def create_poll(request):
+    if request.method == "POST":
+        poll_form = PollForm(request.POST)
+        if poll_form.is_valid():
+            poll = poll_form.save(commit=False)
+            poll.author = request.user
+            poll.save()
+
+            choices = request.POST.getlist('choices[]') 
+            for choice_text in choices:
+                if choice_text.strip():  
+                    Choice.objects.create(poll=poll, text=choice_text)
+
+            return redirect('profile', username=request.user.username)
+
+    else:
+        poll_form = PollForm()
+
+    return render(request, 'social/create_poll.html', {'poll_form': poll_form})
+
+@login_required
+def create_group(request):
+    if request.method == 'POST':
+        form = PublicGroupForm(request.POST, request.FILES)
+        if form.is_valid():
+            group = form.save(commit=False)
+            group.owner = request.user
+            group.save()
+            return redirect('group_detail', group_id=group.id) 
+    else:
+        form = PublicGroupForm()
+
+    return render(request, 'social/create_group.html', {'form': form})
+
+def group_detail(request, group_id):
+    group = get_object_or_404(PublicGroup, id=group_id)
+    return render(request, 'social/group_detail.html', {'group': group})
+
+@login_required
+def create_group_post(request, group_id):
+    group = get_object_or_404(PublicGroup, id=group_id)
+
+    if request.user != group.owner and not request.user in group.admins.all():
+        return redirect('group_detail', group_id=group.id)  
+
+    if request.method == 'POST':
+        content = request.POST.get('content')
+        image = request.FILES.get('image') 
+        if content:
+            post = GroupPost.objects.create(group=group, author=request.user, content=content, image=image)
+            return redirect('group_detail', group_id=group.id) 
+
+    return render(request, 'social/create_group_post.html', {'group': group})
+
+def my_groups(request):
+    if not request.user.is_authenticated:
+        return redirect('login') 
+    
+    groups = PublicGroup.objects.filter(owner=request.user)
+    return render(request, 'social/my_groups.html', {'groups': groups})

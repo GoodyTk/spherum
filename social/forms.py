@@ -1,6 +1,6 @@
 from django import forms
-from .models import Profile, Post, Comment
-from django.contrib.auth.forms import UserCreationForm
+from .models import PollComment, Profile, Post, Comment, PublicGroup
+from .models import Poll, Choice
 
 class ProfileUpdateForm(forms.ModelForm):
     class Meta():
@@ -21,3 +21,23 @@ class CommentForm(forms.ModelForm):
     class Meta:
         model = Comment
         fields = ["content"]
+
+class PollForm(forms.ModelForm):
+    class Meta:
+        model = Poll
+        fields = ['question']
+
+class ChoiceForm(forms.ModelForm):
+    class Meta:
+        model = Choice
+        fields = ['text']
+
+class PollCommentForm(forms.ModelForm):
+    class Meta:
+        model = PollComment
+        fields = ['content'] 
+    
+class PublicGroupForm(forms.ModelForm):
+    class Meta:
+        model = PublicGroup
+        fields = ['name', 'description', 'cover_image']

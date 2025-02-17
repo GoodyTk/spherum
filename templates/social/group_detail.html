@@ -1,0 +1,121 @@
+{% block content %}
+  <div class="group-container">
+    <h1>{{ group.name }}</h1>
+    <p class="group-description">{{ group.description }}</p>
+
+    {% if group.cover_image %}
+      <div class="cover-image-container">
+        <img src="{{ group.cover_image.url }}" alt="{{ group.name }}" class="cover-image">
+      </div>
+    {% endif %}
+    
+    <h2>Посты в паблике:</h2>
+    <div class="posts-container">
+      {% for post in group.posts.all %}
+        <div class="post">
+          <p>{{ post.content }}</p>
+          {% if post.image %}
+            <img src="{{ post.image.url }}" alt="Post Image" class="post-image" />
+          {% endif %}
+          <p class="author">Автор: {{ post.author.username }}</p>
+          <p class="created-at">Создано: {{ post.created_at }}</p>
+        </div>
+      {% empty %}
+        <p>Постов пока нет.</p>
+      {% endfor %}
+    </div>
+
+    <h2>Опросы в паблике:</h2>
+    <div class="polls-container">
+      {% for poll in group.polls.all %}
+        <div class="poll">
+          <p>{{ poll.question }}</p>
+          <a href="{% url 'group_poll_detail' group_id=group.id poll_id=poll.id %}" class="poll-link">Проголосовать</a>
+        </div>
+      {% empty %}
+        <p>Опросов пока нет.</p>
+      {% endfor %}
+    </div>
+  </div>
+
+<style>
+  .group-container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  h1 {
+    font-size: 2.5rem;
+    color: #333;
+    text-align: center;
+    margin-bottom: 20px;
+  }
+
+  .group-description {
+    font-size: 1.2rem;
+    color: #666;
+    text-align: center;
+    margin-bottom: 30px;
+  }
+
+  .cover-image-container {
+    margin-bottom: 30px;
+    text-align: center;
+  }
+
+  .cover-image {
+    max-width: 100%;
+    border-radius: 10px;
+  }
+
+  .posts-container, .polls-container {
+    margin-bottom: 30px;
+  }
+
+  .post, .poll {
+    background-color: white;
+    padding: 15px;
+    margin-bottom: 20px;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  .post p, .poll p {
+    font-size: 1rem;
+    color: #333;
+  }
+
+  .post-image {
+    width: 100%;
+    border-radius: 10px;
+    margin-top: 10px;
+    max-height: 400px;
+    object-fit: cover;
+  }
+
+  .author, .created-at {
+    font-size: 0.9rem;
+    color: #666;
+    margin-top: 10px;
+  }
+
+  .poll-link {
+    display: inline-block;
+    margin-top: 10px;
+    padding: 8px 15px;
+    background-color: #4CAF50;
+    color: white;
+    border-radius: 5px;
+    text-decoration: none;
+    font-size: 1rem;
+  }
+
+  .poll-link:hover {
+    background-color: #45a049;
+  }
+</style>
+{% endblock %}

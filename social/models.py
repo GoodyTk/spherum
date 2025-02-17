@@ -82,3 +82,69 @@ class FriendRequest(models.Model):
 
     def decline(self):
         self.delete()
+
+class Poll(models.Model):  
+    question = models.CharField(max_length=255)  
+    created_at = models.DateTimeField(auto_now_add=True)  
+    author = models.ForeignKey(User, on_delete=models.CASCADE, related_name="polls")  # Автор опроса  
+
+    def __str__(self):  
+        return self.question  
+
+class Choice(models.Model):  
+    poll = models.ForeignKey(Poll, on_delete=models.CASCADE, related_name="choices")  
+    text = models.CharField(max_length=255)  
+    votes = models.IntegerField(default=0)  
+
+    def __str__(self):  
+        return self.text  
+
+    def get_percentage(self):
+        total_votes = self.poll.votes.count()
+        if total_votes == 0:
+            return 0
+        return (self.votes / total_votes) * 100
+    
+class Vote(models.Model):  
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="votes")  
+    poll = models.ForeignKey(Poll, on_delete=models.CASCADE, related_name="votes")  
+    choice = models.ForeignKey(Choice, on_delete=models.CASCADE)  
+    voted_at = models.DateTimeField(auto_now_add=True)  
+
+    class Meta:  
+        unique_together = ('user', 'poll')
+
+class PollComment(models.Model):
+    poll = models.ForeignKey(Poll, on_delete=models.CASCADE, related_name='poll_comments')
+    author = models.ForeignKey(User, on_delete=models.CASCADE)
+    content = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Comment by {self.author.username} on poll: {self.poll.question}"
+    
+class PublicGroup(models.Model):
+    name = models.CharField(max_length=255)
+    description = models.TextField()
+    owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='owned_groups')
+    cover_image = models.ImageField(upload_to='group_covers/', null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.name
+    
+class GroupPost(models.Model):
+    group = models.ForeignKey(PublicGroup, on_delete=models.CASCADE, related_name='posts')  
+    author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='group_posts')
+    content = models.TextField() 
+    image = models.ImageField(upload_to='group_posts/', blank=True, null=True)  
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)  
+
+    def __str__(self):
+        return f"Post by {self.author.username} in {self.group.name}: {self.content[:30]}"
+
+    def get_absolute_url(self):
+        return reverse('group_post_detail', kwargs={'group_id': self.group.id, 'post_id': self.id})
+    
+

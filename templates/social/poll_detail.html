@@ -1,0 +1,185 @@
+{% load static %}
+
+{% block content %}
+<div class="poll-detail-container">
+    <h1 class="poll-question">{{ poll.question }}</h1>
+
+    {% if has_voted %}
+        <h2 class="results-title">Результаты голосования:</h2>
+        <ul class="results-list">
+            {% for choice in poll.choices.all %}
+                <li class="result-item">
+                    {{ choice.text }} - {{ choice.votes }} голосов ({{ choice.get_percentage|floatformat:2 }}%)
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <h2 class="vote-title">Выберите свой вариант:</h2>
+        <form method="post" action="{% url 'vote' poll.id %}" class="vote-form">
+            {% csrf_token %}
+            {% for choice in poll.choices.all %}
+                <label class="choice-label">
+                    <input type="radio" name="choice" value="{{ choice.id }}" class="choice-input">
+                    <span class="choice-text">{{ choice.text }}</span>
+                </label><br>
+            {% endfor %}
+            <button type="submit" class="btn btn-vote">Голосовать</button>
+        </form>
+    {% endif %}
+
+    <div class="back-button-container">
+        <button onclick="window.history.back();" class="btn btn-back">Назад</button>
+    </div>
+
+    <div class="comments-section">
+        <h2>Комментарии</h2>
+        {% for comment in comments %}
+            <div class="comment">
+                <p><strong>{{ comment.author.username }}</strong> ({{ comment.created_at|date:"d.m.Y H:i" }})</p>
+                <p>{{ comment.content }}</p>
+            </div>
+        {% empty %}
+            <p>Пока нет комментариев. Будьте первым!</p>
+        {% endfor %}
+    </div>
+
+    {% if user.is_authenticated %}
+        <h3>Добавить комментарий</h3>
+        <form method="post">
+            {% csrf_token %}
+            {{ comment_form.as_p }}
+            <button type="submit" class="btn btn-submit-comment">Отправить</button>
+        </form>
+    {% else %}
+        <p>Чтобы оставить комментарий, пожалуйста, <a href="{% url 'login' %}">войдите</a>.</p>
+    {% endif %}
+</div>
+{% endblock %}
+
+<style>
+    .poll-detail-container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: #fff;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .poll-question {
+        font-size: 2.5rem;
+        color: #333;
+        text-align: center;
+        margin-bottom: 30px;
+    }
+
+    .results-title, .vote-title {
+        font-size: 2rem;
+        color: #333;
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    .results-list {
+        list-style-type: none;
+        padding-left: 0;
+        text-align: center;
+    }
+
+    .result-item {
+        font-size: 1.2rem;
+        color: #444;
+        margin-bottom: 10px;
+    }
+
+    .vote-form {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-top: 20px;
+    }
+
+    .choice-label {
+        font-size: 1.2rem;
+        color: #333;
+        margin: 10px 0;
+    }
+
+    .choice-text {
+        margin-left: 10px;
+    }
+
+    .choice-input {
+        margin-right: 10px;
+    }
+
+    .btn-vote {
+        padding: 10px 20px;
+        border-radius: 5px;
+        background-color: #4CAF50;
+        color: white;
+        font-size: 1rem;
+        text-align: center;
+        border: none;
+        cursor: pointer;
+        margin-top: 20px;
+    }
+
+    .btn-vote:hover {
+        background-color: #45a049;
+    }
+
+    .btn-back {
+        padding: 10px 20px;
+        border-radius: 5px;
+        background-color: #4CAF50;
+        color: white;
+        text-decoration: none;
+        font-size: 1rem;
+        text-align: center;
+        cursor: pointer;
+    }
+
+    .btn-back:hover {
+        background-color: #45a049;
+    }
+
+    /* Styles for comments section */
+    .comments-section {
+        margin-top: 40px;
+        padding-top: 20px;
+        border-top: 2px solid #f0f0f0;
+    }
+
+    .comment {
+        background-color: #f9f9f9;
+        padding: 15px;
+        margin-bottom: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .comment p {
+        font-size: 1rem;
+        color: #333;
+    }
+
+    .comment strong {
+        color: #4CAF50;
+    }
+
+    .btn-submit-comment {
+        padding: 10px 20px;
+        border-radius: 5px;
+        background-color: #4CAF50;
+        color: white;
+        font-size: 1rem;
+        border: none;
+        cursor: pointer;
+        margin-top: 10px;
+    }
+
+    .btn-submit-comment:hover {
+        background-color: #45a049;
+    }
+</style>

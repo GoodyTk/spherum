@@ -1,0 +1,80 @@
+{% load static %}
+
+{% block content %}
+<div class="polls-container">
+    <h1>Список опросов</h1>
+    <div class="polls-list">
+        {% for poll in polls %}
+            <div class="poll-item">
+                <h2><a href="{% url 'poll_detail' poll.id %}" class="poll-link">{{ poll.question }}</a></h2>
+            </div>
+        {% endfor %}
+    </div>
+
+    <div class="back-button-container">
+        <a href="{% url 'index' %}" class="btn btn-back">Вернуться назад</a>
+    </div>
+</div>
+{% endblock %}
+
+<style>
+    .polls-container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: #fff;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    h1 {
+        font-size: 2.5rem;
+        text-align: center;
+        color: #333;
+        margin-bottom: 20px;
+    }
+
+    .polls-list {
+        margin-top: 20px;
+    }
+
+    .poll-item {
+        margin-bottom: 20px;
+        padding: 15px;
+        background-color: #f9f9f9;
+        border-radius: 8px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    .poll-link {
+        font-size: 1.5rem;
+        color: #4CAF50;
+        text-decoration: none;
+        font-weight: bold;
+    }
+
+    .poll-link:hover {
+        text-decoration: underline;
+        color: #45a049;
+    }
+
+    .back-button-container {
+        display: flex;
+        justify-content: center;
+        margin-top: 30px;
+    }
+
+    .btn-back {
+        padding: 10px 20px;
+        border-radius: 5px;
+        background-color: #4CAF50;
+        color: white;
+        text-decoration: none;
+        font-size: 1rem;
+        text-align: center;
+    }
+
+    .btn-back:hover {
+        background-color: #45a049;
+    }
+</style>
