@@ -17,10 +17,12 @@ urlpatterns = [
     path("", views.PollListView.as_view(), name="poll_list"),
     path("<int:pk>/", views.PollDetailView.as_view(), name="poll_detail"),
     path("<int:poll_id>/vote/", views.vote, name="vote"),
-    path('create_pool/', views.create_poll, name='create_poll'),
+    path('create_poll/', views.create_poll, name='create_poll'),
     path('create_group/', views.create_group, name='create_group'),
     path('group/<int:group_id>/', views.group_detail, name='group_detail'),
     path('group/<int:group_id>/create_post/', views.create_group_post, name='create_group_post'),
     path('my_groups/', views.my_groups, name='my_groups'),
     path('groups/<int:id>/manage/', views.manage_group, name='manage_group'),
+    path('search/', views.search, name='search'),
+    path('friends/', views.friends_list, name='friends_list')
 ]

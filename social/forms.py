@@ -41,3 +41,6 @@ class PublicGroupForm(forms.ModelForm):
     class Meta:
         model = PublicGroup
         fields = ['name', 'description', 'cover_image']
+
+class SearchForm(forms.Form):
+    query = forms.CharField(max_length=255, required=False)

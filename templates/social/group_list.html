@@ -1,10 +1,10 @@
 {% block content %}
     <div class="container">
-        <h1>Мои группы</h1>
-        
-        {% if groups %}
+        <h1>Мої групи</h1>
+
+        {% if user_groups %}
             <ul class="group-list">
-                {% for group in groups %}
+                {% for group in user_groups %}
                     <li class="group-item">
                         <h2>
                             <a href="{% url 'group_detail' group_id=group.id %}">{{ group.name }}</a>
@@ -14,10 +14,31 @@
                 {% endfor %}
             </ul>
         {% else %}
-            <p>У вас нет групп.</p>
+            <p>У вас немає власних груп.</p>
         {% endif %}
+
+        <h1>Підписки</h1>
+
+        {% if subscribed_groups %}
+            <ul class="group-list">
+                {% for group in subscribed_groups.all %}
+                    <li class="group-item">
+                        <h2>
+                            <a href="{% url 'group_detail' group_id=group.id %}">{{ group.name }}</a>
+                        </h2>
+                        <p>{{ group.description }}</p>
+                        <form action="{% url 'unsubscribe_group' group.id %}" method="post">
+                            {% csrf_token %}
+                            <button type="submit">Відписатися</button>
+                        </form>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>Ви ще не підписані на жодну групу.</p>
+        {% endif %}
+
         <div class="buttons">
-            <a href="{% url 'create_group' %}" class="btn btn-primary">Создать группу</a>
             <a href="{% url 'index' %}" class="btn btn-secondary">Вернуться назад</a>
         </div>
     </div>

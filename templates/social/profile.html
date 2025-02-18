@@ -26,7 +26,8 @@
         {% if request.user == user %}
             <a href="{% url 'edit_profile' username=user.username %}" class="btn btn-primary">Редактировать профиль</a>
             <a href="{% url 'create_post' %}" class="btn btn-success">Создать публикацию</a>
-            <a href="{% url 'create_poll' %}" class="btn btn-success">Создать голосование</a>  <!-- Кнопка для создания опроса -->
+            <a href="{% url 'create_poll' %}" class="btn btn-success">Создать голосование</a> 
+            <a href="{% url 'friends_list' %}" class="btn btn-success">My Friends</a>
         {% else %}
             {% if user in request.user.profile.friends.all %}
                 <a href="{% url 'remove_friend' user.id %}" class="btn btn-danger">Удалить из друзей</a>

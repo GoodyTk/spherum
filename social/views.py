@@ -6,6 +6,7 @@ from django.contrib.auth.decorators import login_required
 from django.views.generic import View
 from django.http import JsonResponse, HttpResponseRedirect
 from django.views.generic import ListView, DetailView
+from django.db.models import Q
 # Create your views here.
 
 def edit_profile(request, username):
@@ -297,3 +298,26 @@ def manage_group(request, id):
         'admins': admins,
         'users': users,
     })
+
+def search(request):
+    query = request.GET.get('query', '')
+
+    users = User.objects.filter(Q(username__icontains=query))
+    groups = PublicGroup.objects.filter(Q(name__icontains=query))
+
+    users_data = [{'username': user.username} for user in users]
+    groups_data = [{'id': group.id, 'name': group.name} for group in groups]
+
+    return JsonResponse({'users': users_data, 'groups': groups_data})
+
+def friends_list(request):
+    user = request.user
+
+    friends_from = FriendRequest.objects.filter(from_user=user, status='accepted')
+    friends_to = FriendRequest.objects.filter(to_user=user, status='accepted')
+
+    friends_ids = set(friends_from.values_list('to_user', flat=True)) | set(friends_to.values_list('from_user', flat=True))
+    
+    friends = User.objects.filter(id__in=friends_ids)
+
+    return render(request, 'friends_list.html', {'friends': friends})

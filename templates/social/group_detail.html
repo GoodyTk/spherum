@@ -8,10 +8,6 @@
         <img src="{{ group.cover_image.url }}" alt="{{ group.name }}" class="cover-image">
       </div>
     {% endif %}
-    
-    {% if user == group.owner or user in group.admins.all %}
-      <a href="{% url 'create_poll' group_id=group.id %}" class="btn btn-primary">Создать опрос</a>
-    {% endif %}
 
     {% if user == group.owner or user in group.admins.all %}
       <a href="{% url 'create_group_post' group_id=group.id %}" class="btn btn-primary">Создать пост</a>
@@ -48,6 +44,8 @@
         <p>Опросов пока нет.</p>
       {% endfor %}
     </div>
+
+    <a href="{% url 'my_groups' %}" class="btn btn-secondary">Вернуться назад</a>
   </div>
 
 <style>
@@ -128,6 +126,19 @@
 
   .poll-link:hover {
     background-color: #45a049;
+  }
+
+  .btn-secondary {
+    padding: 10px 20px;
+    background-color: #6C757D;
+    color: white;
+    border-radius: 5px;
+    text-decoration: none;
+    font-size: 16px;
+  }
+
+  .btn-secondary:hover {
+    background-color: #5a6268;
   }
 </style>
 {% endblock %}
