@@ -82,6 +82,9 @@ class FriendRequest(models.Model):
 
     def decline(self):
         self.delete()
+    
+    class Meta:
+        unique_together = ('from_user', 'to_user')
 
 class Poll(models.Model):  
     question = models.CharField(max_length=255)  

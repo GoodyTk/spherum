@@ -40,14 +40,14 @@
     </div>
 
     {% if request.user == user %}
-        <h2 class="section-title">Входящие запросы в друзья</h2>
-        {% for req in request.user.received_requests.all %}
-            <div class="request">
-                <p>Запрос от {{ req.from_user.username }}</p>
-                <button class="btn btn-success" id="accept-request-{{ req.id }}">Принять</button>
-                <button class="btn btn-danger" id="decline-request-{{ req.id }}">Отклонить</button>
-            </div>
-        {% endfor %}
+    <h2 class="section-title">Входящие запросы в друзья</h2>
+    {% for req in request.user.received_requests.all %}
+        <div class="request">
+            <p>Запрос от {{ req.from_user.username }}</p>
+            <button class="btn btn-success accept-btn" data-request-id="{{ req.id }}" data-request-url="{% url 'accept_friend_request' req.id %}">Принять</button>
+            <button class="btn btn-danger decline-btn" data-request-id="{{ req.id }}" data-request-url="{% url 'decline_friend_request' req.id %}">Отклонить</button>
+        </div>
+    {% endfor %}
     {% endif %}
 
     <h2 class="section-title">Мои опросы</h2>
@@ -127,53 +127,35 @@
         }
     }
 
-    {% for req in request.user.received_requests.all %}
-        document.getElementById('accept-request-{{ req.id }}').addEventListener('click', function(e) {
+    document.addEventListener("DOMContentLoaded", function () {
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value || '';
+
+    function sendFriendRequest(button) {
+        fetch(button.dataset.requestUrl, {
+            method: 'GET',
+            headers: { 'X-CSRFToken': csrfToken }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                button.textContent = button.classList.contains('accept-btn') ? "Запрос принят" : "Запрос отклонён";
+                button.disabled = true;
+            } else {
+                alert("Ошибка при обработке запроса");
+            }
+        })
+        .catch(error => console.error("Ошибка при обработке запроса:", error));
+    }
+
+    document.querySelectorAll('.accept-btn, .decline-btn').forEach(button => {
+        button.addEventListener('click', function (e) {
             e.preventDefault();
-
-            fetch('{% url "accept_friend_request" req.id %}', {
-                method: 'GET',
-                headers: {
-                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === 'success') {
-                    document.getElementById('accept-request-{{ req.id }}').textContent = "Запрос принят";
-                    document.getElementById('accept-request-{{ req.id }}').disabled = true;
-                } else {
-                    alert('Ошибка при принятии запроса');
-                }
-            })
-            .catch(error => {
-                console.error("Ошибка при принятии запроса:", error);
-            });
+            sendFriendRequest(this);
         });
+    });
+});
 
-        document.getElementById('decline-request-{{ req.id }}').addEventListener('click', function(e) {
-            e.preventDefault();
 
-            fetch('{% url "decline_friend_request" req.id %}', {
-                method: 'GET',
-                headers: {
-                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === 'success') {
-                    document.getElementById('decline-request-{{ req.id }}').textContent = "Запрос отклонён";
-                    document.getElementById('decline-request-{{ req.id }}').disabled = true;
-                } else {
-                    alert('Ошибка при отклонении запроса');
-                }
-            })
-            .catch(error => {
-                console.error("Ошибка при отклонении запроса:", error);
-            });
-        });
-    {% endfor %}
 </script>
 
 {% endblock %}
