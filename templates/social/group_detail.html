@@ -1,52 +1,58 @@
 {% block content %}
-  <div class="group-container">
+<div class="group-container">
     <h1>{{ group.name }}</h1>
     <p class="group-description">{{ group.description }}</p>
 
     {% if group.cover_image %}
-      <div class="cover-image-container">
+    <div class="cover-image-container">
         <img src="{{ group.cover_image.url }}" alt="{{ group.name }}" class="cover-image">
-      </div>
+    </div>
     {% endif %}
 
     {% if user == group.owner or user in group.admins.all %}
-      <a href="{% url 'create_group_post' group_id=group.id %}" class="btn btn-primary">Создать пост</a>
+    <a href="{% url 'create_group_post' group_id=group.id %}" class="btn btn-primary">Создать пост</a>
     {% endif %}
 
     {% if user == group.owner %}
-      <a href="{% url 'manage_group' id=group.id %}" class="btn btn-warning">Управление</a>
+    <a href="{% url 'manage_group' id=group.id %}" class="btn btn-warning">Управление</a>
+    {% endif %}
+
+    {% if is_subscribed %}
+    <a href="{% url 'unsubscribe_from_group' group_id=group.id %}" class="btn btn-danger">Отписаться</a>
+    {% else %}
+    <a href="{% url 'subscribe_to_group' group_id=group.id %}" class="btn btn-success">Подписаться</a>
     {% endif %}
 
     <h2>Посты в паблике:</h2>
     <div class="posts-container">
-      {% for post in group.posts.all %}
-        <div class="post">
-          <p>{{ post.content }}</p>
-          {% if post.image %}
-            <img src="{{ post.image.url }}" alt="Post Image" class="post-image" />
-          {% endif %}
-          <p class="author">Автор: {{ post.author.username }}</p>
-          <p class="created-at">Создано: {{ post.created_at }}</p>
-        </div>
-      {% empty %}
-        <p>Постов пока нет.</p>
-      {% endfor %}
+        {% for post in group.posts.all %}
+            <div class="post">
+                <p>{{ post.content }}</p>
+                {% if post.image %}
+                    <img src="{{ post.image.url }}" alt="Post Image" class="post-image" />
+                {% endif %}
+                <p class="author">Автор: {{ post.author.username }}</p>
+                <p class="created-at">Создано: {{ post.created_at }}</p>
+            </div>
+        {% empty %}
+            <p>Постов пока нет.</p>
+        {% endfor %}
     </div>
 
     <h2>Опросы в паблике:</h2>
     <div class="polls-container">
-      {% for poll in group.polls.all %}
-        <div class="poll">
-          <p>{{ poll.question }}</p>
-          <a href="{% url 'group_poll_detail' group_id=group.id poll_id=poll.id %}" class="poll-link">Проголосовать</a>
-        </div>
-      {% empty %}
-        <p>Опросов пока нет.</p>
-      {% endfor %}
+        {% for poll in group.polls.all %}
+            <div class="poll">
+                <p>{{ poll.question }}</p>
+                <a href="{% url 'group_poll_detail' group_id=group.id poll_id=poll.id %}" class="poll-link">Проголосовать</a>
+            </div>
+        {% empty %}
+            <p>Опросов пока нет.</p>
+        {% endfor %}
     </div>
 
     <a href="{% url 'my_groups' %}" class="btn btn-secondary">Вернуться назад</a>
-  </div>
+</div>
 
 <style>
   .group-container {
@@ -140,5 +146,54 @@
   .btn-secondary:hover {
     background-color: #5a6268;
   }
+
+  .btn {
+    padding: 10px 20px;
+    border-radius: 5px;
+    color: white;
+    text-decoration: none;
+    font-size: 16px;
+  }
+
+  .btn:hover {
+    opacity: 0.8;
+  }
+
+  .btn-success {
+    background-color: #28a745; 
+    border: none;
+  }
+
+  .btn-success:hover {
+    background-color: #218838;
+  }
+
+  .btn-danger {
+    background-color: #dc3545; 
+    border: none;
+  }
+
+  .btn-danger:hover {
+    background-color: #c82333;
+  }
+
+  .btn-warning {
+    background-color: #f0ad4e;
+    border: none;
+  }
+
+  .btn-warning:hover {
+    background-color: #ec971f;
+  }
+
+  .btn-primary {
+    background-color: #007bff; 
+    border: none;
+  }
+
+  .btn-primary:hover {
+    background-color: #0056b3; 
+  }
 </style>
+
 {% endblock %}

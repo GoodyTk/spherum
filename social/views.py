@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from .forms import CommentForm, PollCommentForm, PollForm, ProfileUpdateForm, PostForm, PublicGroupForm
 from django.contrib.auth.models import User
-from .models import Choice, Follow, FriendRequest, GroupPost, Like, Poll, Post, Profile, Comment, PublicGroup, Vote
+from .models import Choice, Follow, FriendRequest, GroupPost, GroupSubscription, Like, Poll, Post, Profile, Comment, PublicGroup, Vote
 from django.contrib.auth.decorators import login_required
 from django.views.generic import View
 from django.http import JsonResponse, HttpResponseRedirect
@@ -245,7 +245,11 @@ def create_group(request):
 
 def group_detail(request, group_id):
     group = get_object_or_404(PublicGroup, id=group_id)
-    return render(request, 'social/group_detail.html', {'group': group})
+    is_subscribed = GroupSubscription.objects.filter(user=request.user, group=group).exists()
+    return render(request, 'social/group_detail.html', {
+        'group': group,
+        'is_subscribed': is_subscribed,
+    })
 
 @login_required
 def create_group_post(request, group_id):
@@ -264,11 +268,14 @@ def create_group_post(request, group_id):
     return render(request, 'social/create_group_post.html', {'group': group})
 
 def my_groups(request):
-    if not request.user.is_authenticated:
-        return redirect('login') 
+    my_groups = PublicGroup.objects.filter(owner=request.user)
     
-    groups = PublicGroup.objects.filter(owner=request.user)
-    return render(request, 'social/my_groups.html', {'groups': groups})
+    subscribed_groups = PublicGroup.objects.filter(subscribers__user=request.user)
+
+    return render(request, 'social/my_groups.html', {
+        'my_groups': my_groups,
+        'subscribed_groups': subscribed_groups
+    })
 
 @login_required
 def manage_group(request, id):
@@ -366,3 +373,18 @@ def following_list(request, user_id):
         'user': user,
         'following': following,
     })
+
+def subscribe_to_group(request, group_id):
+    group = get_object_or_404(PublicGroup, id=group_id)
+    
+    if not GroupSubscription.objects.filter(user=request.user, group=group).exists():
+        GroupSubscription.objects.create(user=request.user, group=group)
+    
+    return redirect('group_detail', group_id=group.id)
+
+def unsubscribe_from_group(request, group_id):
+    group = get_object_or_404(PublicGroup, id=group_id)
+    subscription = GroupSubscription.objects.filter(user=request.user, group=group).first()
+    if subscription:
+        subscription.delete()
+    return redirect('group_detail', group_id=group.id)

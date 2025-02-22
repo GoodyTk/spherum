@@ -28,5 +28,7 @@ urlpatterns = [
     path('follow/<int:user_id>/', views.follow_user, name='follow_user'),
     path('unfollow/<int:user_id>/', views.unfollow_user, name='unfollow_user'),
     path('profile/<int:user_id>/followers/', views.followers_list, name='followers_list'),
-    path('profile/<int:user_id>/following/', views.following_list, name='following_list')
+    path('profile/<int:user_id>/following/', views.following_list, name='following_list'),
+    path('group/<int:group_id>/subscribe/', views.subscribe_to_group, name='subscribe_to_group'),
+    path('group/<int:group_id>/unsubscribe/', views.unsubscribe_from_group, name='unsubscribe_from_group'),
 ]

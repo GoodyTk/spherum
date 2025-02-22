@@ -1,10 +1,11 @@
 {% block content %}
     <div class="container">
-        <h1>Мои группы</h1>
+        <h1>Группы</h1>
         
-        {% if groups %}
+        <h2>Мои группы:</h2>
+        {% if my_groups %}
             <ul class="group-list">
-                {% for group in groups %}
+                {% for group in my_groups %}
                     <li class="group-item">
                         <h2>
                             <a href="{% url 'group_detail' group_id=group.id %}">{{ group.name }}</a>
@@ -14,8 +15,25 @@
                 {% endfor %}
             </ul>
         {% else %}
-            <p>У вас нет групп.</p>
+            <p>У вас нет групп, где вы являетесь создателем.</p>
         {% endif %}
+        
+        <h2>Подписки:</h2>
+        {% if subscribed_groups %}
+            <ul class="group-list">
+                {% for group in subscribed_groups %}
+                    <li class="group-item">
+                        <h2>
+                            <a href="{% url 'group_detail' group_id=group.id %}">{{ group.name }}</a>
+                        </h2>
+                        <p>{{ group.description }}</p>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>Вы не подписаны на ни одну группу.</p>
+        {% endif %}
+
         <div class="buttons">
             <a href="{% url 'create_group' %}" class="btn btn-primary">Создать группу</a>
             <a href="{% url 'index' %}" class="btn btn-secondary">Вернуться назад</a>
@@ -37,6 +55,11 @@
         h1 {
             font-size: 2rem;
             color: #333;
+        }
+        h2 {
+            font-size: 1.5rem;
+            color: #333;
+            margin-top: 20px;
         }
         .group-list {
             list-style-type: none;

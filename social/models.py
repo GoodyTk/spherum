@@ -151,4 +151,13 @@ class GroupPost(models.Model):
     def get_absolute_url(self):
         return reverse('group_post_detail', kwargs={'group_id': self.group.id, 'post_id': self.id})
     
+class GroupSubscription(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="group_subscriptions")
+    group = models.ForeignKey(PublicGroup, on_delete=models.CASCADE, related_name="subscribers")
+    subscribed_at = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        unique_together = ('user', 'group')  
+
+    def __str__(self):
+        return f"{self.user.username} subscribed to {self.group.name}"
