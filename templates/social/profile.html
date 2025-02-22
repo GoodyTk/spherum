@@ -39,6 +39,25 @@
         {% endif %}
     </div>
 
+    <div class="profile-container">
+        {% if user != request.user %}
+            <div class="buttons">
+                {% if is_following %}
+                    <a href="{% url 'unfollow_user' user.id %}" class="btn" style="background-color: #f44336;">Unfollow</a>
+                {% else %}
+                    <a href="{% url 'follow_user' user.id %}" class="btn" style="background-color: #4CAF50;">Follow</a>
+                {% endif %}
+            </div>
+        {% endif %}
+    
+        <div class="buttons">
+            <a href="{% url 'followers_list' user.id %}" class="btn" style="background-color: #2196F3;">Подписчики</a>
+            <a href="{% url 'following_list' user.id %}" class="btn" style="background-color: #2196F3;">Подписки</a>
+        </div>
+    </div>
+    
+    
+
     {% if request.user == user %}
     <h2 class="section-title">Входящие запросы в друзья</h2>
     {% for req in request.user.received_requests.all %}

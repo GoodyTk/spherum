@@ -24,5 +24,9 @@ urlpatterns = [
     path('my_groups/', views.my_groups, name='my_groups'),
     path('groups/<int:id>/manage/', views.manage_group, name='manage_group'),
     path('search/', views.search, name='search'),
-    path('friends/', views.friends_list, name='friends_list')
+    path('friends/', views.friends_list, name='friends_list'),
+    path('follow/<int:user_id>/', views.follow_user, name='follow_user'),
+    path('unfollow/<int:user_id>/', views.unfollow_user, name='unfollow_user'),
+    path('profile/<int:user_id>/followers/', views.followers_list, name='followers_list'),
+    path('profile/<int:user_id>/following/', views.following_list, name='following_list')
 ]

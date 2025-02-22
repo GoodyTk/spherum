@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ user.username }}'s Following</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .section-title {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .following-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .following-item {
+            margin: 10px 0;
+            background-color: #fff;
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .following-link {
+            font-size: 18px;
+            color: #007BFF;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .following-link:hover {
+            text-decoration: underline;
+        }
+
+        .no-following {
+            font-size: 16px;
+            color: #888;
+        }
+
+    </style>
+</head>
+<body>
+
+    <h2 class="section-title">Подписки</h2>
+    <ul class="following-list">
+        {% for follow in user.following.all %}
+            <li class="following-item">
+                <a href="{% url 'profile' follow.following.username %}" class="following-link">
+                    {{ follow.following.username }}
+                </a>
+            </li>
+        {% empty %}
+            <li class="no-following">Не найдено пользователей на которых вы подписаны</li>
+        {% endfor %}
+    </ul>
+
+</body>
+</html>

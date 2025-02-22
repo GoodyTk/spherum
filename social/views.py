@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from .forms import CommentForm, PollCommentForm, PollForm, ProfileUpdateForm, PostForm, PublicGroupForm
 from django.contrib.auth.models import User
-from .models import Choice, FriendRequest, GroupPost, Like, Poll, Post, Profile, Comment, PublicGroup, Vote
+from .models import Choice, Follow, FriendRequest, GroupPost, Like, Poll, Post, Profile, Comment, PublicGroup, Vote
 from django.contrib.auth.decorators import login_required
 from django.views.generic import View
 from django.http import JsonResponse, HttpResponseRedirect
@@ -24,12 +24,18 @@ def profile(request, username):
     user = get_object_or_404(User, username=username)
     profile = get_object_or_404(Profile, user=user)
 
-    sent_request_exists = FriendRequest.objects.filter(from_user=request.user, to_user=user).exists()
+    followers = user.followers.all()
+    following = user.following.all()
 
+    sent_request_exists = FriendRequest.objects.filter(from_user=request.user, to_user=user).exists()
+    is_following = Follow.objects.filter(follower=request.user, following=user).exists()
     return render(request, 'social/profile.html', {
         'user': user,
         'profile': profile,
-        'sent_request_exists': sent_request_exists, 
+        'sent_request_exists': sent_request_exists,
+        'followers': followers,
+        'following': following,
+        'is_following': is_following
     })
 
 @login_required
@@ -311,13 +317,52 @@ def search(request):
     return JsonResponse({'users': users_data, 'groups': groups_data})
 
 def friends_list(request):
-    user = request.user
+    friends = []
 
-    friends_from = FriendRequest.objects.filter(from_user=user, status='accepted')
-    friends_to = FriendRequest.objects.filter(to_user=user, status='accepted')
+    friends_from_user = request.user.profile.friends.all()
 
-    friends_ids = set(friends_from.values_list('to_user', flat=True)) | set(friends_to.values_list('from_user', flat=True))
+    friends_to_user = User.objects.filter(profile__friends=request.user.profile)
+
+    friends = list(friends_from_user) + list(friends_to_user)
+
+    friends = list(set(friends))
+
+    return render(request, 'social/friends_list.html', {'friends': friends})
+
+@login_required
+def follow_user(request, user_id):
+    user_to_follow = get_object_or_404(User, id=user_id)
     
-    friends = User.objects.filter(id__in=friends_ids)
+    if not Follow.objects.filter(follower=request.user, following=user_to_follow).exists():
+        Follow.objects.create(follower=request.user, following=user_to_follow)
+    
+    return redirect('profile', username=user_to_follow.username)
 
-    return render(request, 'friends_list.html', {'friends': friends})
+
+@login_required
+def unfollow_user(request, user_id):
+    user_to_unfollow = get_object_or_404(User, id=user_id)
+
+    follow_instance = Follow.objects.filter(follower=request.user, following=user_to_unfollow).first()
+    if follow_instance:
+        follow_instance.delete()
+    
+    return redirect('profile', username=user_to_unfollow.username)
+
+@login_required
+def followers_list(request, user_id):
+    user = get_object_or_404(User, id=user_id)
+    followers = user.followers.all()
+    return render(request, 'social/followers_list.html', {
+        'user': user,
+        'followers': followers,
+    })
+
+@login_required
+def following_list(request, user_id):
+    user = get_object_or_404(User, id=user_id)
+    following = user.following.all()
+    return render(request, 'social/following_list.html', {
+        'user': user,
+        'following': following,
+    })
