@@ -31,4 +31,12 @@ urlpatterns = [
     path('profile/<int:user_id>/following/', views.following_list, name='following_list'),
     path('group/<int:group_id>/subscribe/', views.subscribe_to_group, name='subscribe_to_group'),
     path('group/<int:group_id>/unsubscribe/', views.unsubscribe_from_group, name='unsubscribe_from_group'),
+    path('report/', views.create_report, name='create_report'),
+    path('admin/reports/', views.admin_reports, name='admin_reports'),
+    path('admin/reports/<int:report_id>/<str:status>/', views.change_report_status, name='change_report_status'),
+    path('report/user/<int:user_id>/', views.report_user, name='report_user'),
+    path('report/group/<int:group_id>/', views.report_group, name='report_group'),
+    path('report/<int:report_id>/archive/', views.archive_report, name='archive_report'),
+    path('ban/<int:report_id>/', views.ban_user_or_group, name='ban_user_or_group'),
+    path('unban/<int:report_id>/', views.unban_user_or_group, name='unban_user_or_group'),
 ]

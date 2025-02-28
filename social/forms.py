@@ -1,5 +1,5 @@
 from django import forms
-from .models import PollComment, Profile, Post, Comment, PublicGroup
+from .models import PollComment, Profile, Post, Comment, PublicGroup, Report
 from .models import Poll, Choice
 
 class ProfileUpdateForm(forms.ModelForm):
@@ -44,3 +44,8 @@ class PublicGroupForm(forms.ModelForm):
 
 class SearchForm(forms.Form):
     query = forms.CharField(max_length=255, required=False)
+
+class ReportForm(forms.ModelForm):
+    class Meta:
+        model = Report
+        fields = ['reason', 'report_type']

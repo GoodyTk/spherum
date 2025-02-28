@@ -21,6 +21,10 @@
         </p>
     </div>
 
+    {% if not user.is_active %}
+        <p class="banned-message">Цей користувач заблокований.</p>
+    {% endif %}
+
     <div class="buttons">
         <a href="/" class="btn btn-secondary">На главную</a>
         {% if request.user == user %}
@@ -38,6 +42,10 @@
             {% endif %}
         {% endif %}
     </div>
+
+    {% if user != request.user %}
+        <a href="{% url 'report_user' user.id %}" class="btn btn-danger">Поскаржитися на акаунт</a>
+    {% endif %}
 
     <div class="profile-container">
         {% if user != request.user %}
@@ -312,4 +320,13 @@
     .poll-link:hover {
         text-decoration: underline;
     }
+
+    .banned-message {
+    background-color: red;
+    color: white;
+    padding: 10px;
+    text-align: center;
+    font-weight: bold;
+    border-radius: 5px;
+}
 </style>

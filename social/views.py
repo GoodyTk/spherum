@@ -1,12 +1,14 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from .forms import CommentForm, PollCommentForm, PollForm, ProfileUpdateForm, PostForm, PublicGroupForm
+from .forms import CommentForm, PollCommentForm, PollForm, ProfileUpdateForm, PostForm, PublicGroupForm, ReportForm
 from django.contrib.auth.models import User
-from .models import Choice, Follow, FriendRequest, GroupPost, GroupSubscription, Like, Poll, Post, Profile, Comment, PublicGroup, Vote
+from .models import Choice, Follow, FriendRequest, GroupPost, GroupSubscription, Like, Poll, Post, Profile, Comment, PublicGroup, Report, Vote
 from django.contrib.auth.decorators import login_required
 from django.views.generic import View
 from django.http import JsonResponse, HttpResponseRedirect
 from django.views.generic import ListView, DetailView
 from django.db.models import Q
+from django.contrib import messages
+from django.contrib.auth import authenticate, login
 # Create your views here.
 
 def edit_profile(request, username):
@@ -388,3 +390,136 @@ def unsubscribe_from_group(request, group_id):
     if subscription:
         subscription.delete()
     return redirect('group_detail', group_id=group.id)
+
+@login_required
+def create_report(request):
+    if request.method == "POST":
+        form = ReportForm(request.POST)
+        if form.is_valid():
+            report = form.save(commit=False)
+            report.reporter = request.user
+            report.save()
+            return redirect('index') 
+    else:
+        form = ReportForm()
+    return render(request, 'social/create_report.html', {'form': form})
+
+@login_required
+def admin_reports(request):
+    if not request.user.is_staff:
+        return redirect('index')  
+    
+    reports = Report.objects.all()
+    return render(request, 'social/admin_reports.html', {'reports': reports})
+
+@login_required
+def change_report_status(request, report_id, status):
+    if not request.user.is_staff:
+        return redirect('home')
+
+    report = get_object_or_404(Report, id=report_id)
+    if status in ['accepted', 'rejected']:
+        report.status = status
+        report.save()
+    
+    return redirect('admin_reports')
+
+@login_required
+def report_user(request, user_id):
+    reported_user = get_object_or_404(User, id=user_id)
+    
+    if request.method == 'POST':
+        form = ReportForm(request.POST)
+        if form.is_valid():
+            report = form.save(commit=False)
+            report.reported_user = reported_user
+            report.reporter = request.user
+            report.save()
+            return redirect('profile', username=reported_user.username)
+    else:
+        form = ReportForm()
+
+    return render(request, 'social/report_form.html', {'form': form, 'report_type': 'користувача'})
+
+@login_required
+def report_group(request, group_id):
+    reported_group = get_object_or_404(PublicGroup, id=group_id)
+    
+    if request.method == 'POST':
+        form = ReportForm(request.POST)
+        if form.is_valid():
+            report = form.save(commit=False)
+            report.reported_group = reported_group
+            report.reporter = request.user
+            report.save()
+            return redirect('group_detail', group_id=reported_group.id)
+    else:
+        form = ReportForm()
+
+    return render(request, 'social/report_form.html', {'form': form, 'report_type': 'групу'})
+
+def archive_report(request, report_id):
+    report = get_object_or_404(Report, id=report_id)
+    report.is_archived = True
+    report.save()
+    return redirect('admin_reports') 
+
+@login_required
+def ban_user_or_group(request, report_id):
+    report = get_object_or_404(Report, id=report_id)
+    
+    if report.report_type == 'user' and report.reported_user:
+        report.reported_user.is_active = False  
+        report.reported_user.save()
+        messages.success(request, f"Користувач {report.reported_user.username} заблокований.")
+    elif report.report_type == 'group' and report.reported_group:
+        report.reported_group.is_banned = True 
+        report.reported_group.save()
+        messages.success(request, f"Група {report.reported_group.name} заблокована.")
+    
+    report.is_banned = True
+    report.is_archived = True  
+    report.save()
+    
+    return redirect('admin_reports')
+
+@login_required
+def unban_user_or_group(request, report_id):
+    report = get_object_or_404(Report, id=report_id)
+    
+    if report.report_type == 'user' and report.reported_user:
+        report.reported_user.is_active = True  
+        report.reported_user.save()
+        messages.success(request, f"Користувач {report.reported_user.username} розблокований.")
+    elif report.report_type == 'group' and report.reported_group:
+        report.reported_group.is_banned = False  
+        report.reported_group.save()
+        messages.success(request, f"Група {report.reported_group.name} розблокована.")
+    
+    report.is_banned = False
+    report.is_archived = False
+    report.save()
+    
+    return redirect('admin_reports')
+
+def group_detail(request, group_id):
+    group = get_object_or_404(PublicGroup, id=group_id)
+
+    return render(request, 'social/group_detail.html', {'group': group})
+
+def custom_login(request):
+    if request.method == 'POST':
+        username = request.POST['username']
+        password = request.POST['password']
+        user = authenticate(request, username=username, password=password)
+        
+        if user is not None:
+            if not user.is_active:
+                messages.error(request, "Ваш акаунт заблокований.")
+                return redirect('login')
+            login(request, user)
+            return redirect('home')
+        else:
+            messages.error(request, "Неправильний логін або пароль.")
+    
+    return render(request, 'log_system/login.html')

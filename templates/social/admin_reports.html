@@ -1,0 +1,172 @@
+<div class="container">
+    <h2 class="complaints-title">Скарги</h2>
+    {% for report in reports %}
+        {% if not report.is_archived %} 
+            <div class="report-box">
+                <p class="report-type"><strong>Тип:</strong> {{ report.report_type }}</p>
+                <p class="reporter"><strong>Скаржник:</strong> <a href="{% url 'profile' report.reporter.username %}" class="profile-link">{{ report.reporter.username }}</a></p>
+                
+                {% if report.report_type == 'user' %}
+                    <p class="reported-user"><strong>Скаржений користувач:</strong> 
+                        <a href="{% url 'profile' report.reported_user.username %}" class="profile-link">{{ report.reported_user.username }}</a>
+                    </p>
+                {% elif report.report_type == 'group' %}
+                    <p class="reported-group"><strong>Скаржена група:</strong> 
+                        <a href="{% url 'group_detail' report.reported_group.id %}" class="group-link">{{ report.reported_group.name }}</a>
+                    </p>
+                {% endif %}
+                
+                <p class="report-reason"><strong>Причина:</strong> {{ report.reason }}</p>
+                <p class="report-status"><strong>Статус:</strong> {{ report.get_status_display }}</p>
+                <div class="buttons">
+                    <a href="{% url 'change_report_status' report.id 'accepted' %}" class="btn-accept">Прийняти</a>
+                    <a href="{% url 'change_report_status' report.id 'rejected' %}" class="btn-reject">Відхилити</a>
+                    <a href="{% url 'archive_report' report.id %}" class="btn-archive">В архів</a>
+                    {% if not report.is_banned %}
+                        <a href="{% url 'ban_user_or_group' report.id %}" class="btn-ban">Забанити</a>
+                    {% else %}
+                        <a href="{% url 'unban_user_or_group' report.id %}" class="btn-unban">Розбанити</a>
+                    {% endif %}
+                </div>
+            </div>
+        {% endif %}
+    {% endfor %}
+
+    <div class="back-button">
+        <a href="{% url 'index' %}" class="btn-back">Вернутися на головну</a>
+    </div>
+</div>
+
+<style>
+    .container {
+        padding: 20px;
+        font-family: Arial, sans-serif;
+    }
+
+    .complaints-title {
+        text-align: center;
+        font-size: 3em;
+        margin-bottom: 30px;
+        color: #333;
+        font-weight: bold;
+    }
+
+    .report-box {
+        background-color: #f9f9f9;
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        transition: transform 0.2s ease;
+    }
+
+    .report-box:hover {
+        transform: scale(1.02);
+    }
+
+    .report-type,
+    .reporter,
+    .reported-user,
+    .reported-group,
+    .report-reason,
+    .report-status {
+        font-size: 1.1em;
+        margin: 10px 0;
+        color: #555;
+    }
+
+    .profile-link,
+    .group-link {
+        color: #007bff;
+        text-decoration: none;
+    }
+
+    .profile-link:hover,
+    .group-link:hover {
+        text-decoration: underline;
+    }
+
+    .buttons {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 20px;
+    }
+
+    .btn-accept,
+    .btn-reject,
+    .btn-archive {
+        padding: 10px 20px;
+        border-radius: 5px;
+        text-decoration: none;
+        color: white;
+        font-size: 1em;
+    }
+
+    .btn-accept {
+        background-color: #28a745;
+    }
+
+    .btn-reject {
+        background-color: #dc3545;
+    }
+
+    .btn-archive {
+        background-color: #6c757d;  
+    }
+
+    .btn-accept:hover {
+        background-color: #218838;
+    }
+
+    .btn-reject:hover {
+        background-color: #c82333;
+    }
+
+    .btn-archive:hover {
+        background-color: #5a6268;  
+    }
+
+    .back-button {
+        text-align: center;
+        margin-top: 40px;
+    }
+
+    .btn-back {
+        padding: 12px 24px;
+        background-color: #007bff;
+        color: white;
+        text-decoration: none;
+        font-size: 1.1em;
+        border-radius: 5px;
+        transition: background-color 0.3s;
+    }
+
+    .btn-back:hover {
+        background-color: #0056b3;
+    }
+
+    .btn-ban {
+        background-color: #ff0000;
+        padding: 10px 20px;
+        border-radius: 5px;
+        color: white;
+        text-decoration: none;
+    }
+
+    .btn-ban:hover {
+        background-color: #cc0000;
+    }
+
+    .btn-unban {
+        background-color: #007bff;
+        padding: 10px 20px;
+        border-radius: 5px;
+        color: white;
+        text-decoration: none;
+    }
+
+    .btn-unban:hover {
+        background-color: #0056b3;
+    }
+</style>

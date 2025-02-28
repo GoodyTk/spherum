@@ -9,19 +9,25 @@
     </div>
     {% endif %}
 
-    {% if user == group.owner or user in group.admins.all %}
-    <a href="{% url 'create_group_post' group_id=group.id %}" class="btn btn-primary">Создать пост</a>
-    {% endif %}
-
-    {% if user == group.owner %}
-    <a href="{% url 'manage_group' id=group.id %}" class="btn btn-warning">Управление</a>
-    {% endif %}
-
-    {% if is_subscribed %}
-    <a href="{% url 'unsubscribe_from_group' group_id=group.id %}" class="btn btn-danger">Отписаться</a>
+    {% if not group.is_active %}
+        <p class="banned-message">Група заблокована.</p>
     {% else %}
-    <a href="{% url 'subscribe_to_group' group_id=group.id %}" class="btn btn-success">Подписаться</a>
+        {% if user == group.owner or user in group.admins.all %}
+        <a href="{% url 'create_group_post' group_id=group.id %}" class="btn btn-primary">Создать пост</a>
+        {% endif %}
+
+        {% if user == group.owner %}
+        <a href="{% url 'manage_group' id=group.id %}" class="btn btn-warning">Управление</a>
+        {% endif %}
+
+        {% if is_subscribed %}
+        <a href="{% url 'unsubscribe_from_group' group_id=group.id %}" class="btn btn-danger">Отписаться</a>
+        {% else %}
+        <a href="{% url 'subscribe_to_group' group_id=group.id %}" class="btn btn-success">Подписаться</a>
+        {% endif %}
     {% endif %}
+
+    <a href="{% url 'report_group' group.id %}" class="btn btn-danger">Поскаржитися на групу</a>
 
     <h2>Посты в паблике:</h2>
     <div class="posts-container">
@@ -44,7 +50,9 @@
         {% for poll in group.polls.all %}
             <div class="poll">
                 <p>{{ poll.question }}</p>
-                <a href="{% url 'group_poll_detail' group_id=group.id poll_id=poll.id %}" class="poll-link">Проголосовать</a>
+                {% if group.is_active %}
+                    <a href="{% url 'group_poll_detail' group_id=group.id poll_id=poll.id %}" class="poll-link">Проголосовать</a>
+                {% endif %}
             </div>
         {% empty %}
             <p>Опросов пока нет.</p>
@@ -194,6 +202,14 @@
   .btn-primary:hover {
     background-color: #0056b3; 
   }
-</style>
 
+  .banned-message {
+    background-color: red;
+    color: white;
+    padding: 10px;
+    text-align: center;
+    font-weight: bold;
+    border-radius: 5px;
+  }
+</style>
 {% endblock %}

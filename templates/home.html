@@ -63,6 +63,10 @@
             background-color: #28A745;
             color: white;
         }
+        .btn-warning {
+            background-color: #FFC107;
+            color: black;
+        }
         .search-container {
             margin: 20px 0;
         }
@@ -98,7 +102,6 @@
         </a>
     {% endif %}
     
-    <!-- Поиск -->
     <div class="search-container">
         <input type="text" id="search" class="search-input" placeholder="Search groups and users..." oninput="performSearch()">
         <ul id="search-results" class="search-results"></ul>
@@ -113,6 +116,10 @@
         <div class="buttons">
             <a href="{% url 'logout' %}" class="btn btn-danger">Logout</a>
             <a href="{% url 'my_groups' %}" class="btn btn-success">My Groups</a>
+            
+            {% if user.is_staff %}
+            <a href="{% url 'admin_reports' %}" class="btn btn-warning">Reports</a>
+            {% endif %}
         </div>
     {% else %}
         <p>Welcome, guest! Please login to get started.</p>
@@ -125,49 +132,44 @@
 
 <script>
     document.getElementById('search').addEventListener('keypress', function(event) {
-    if (event.key === 'Enter') {
-        performSearch(); // вызываем поиск при нажатии Enter
+        if (event.key === 'Enter') {
+            performSearch();
+        }
+    });
+
+    function performSearch() {
+        const query = document.getElementById('search').value;
+
+        if (query.length < 2) {
+            document.getElementById('search-results').innerHTML = '';
+            return;
+        }
+
+        fetch(`/social/search/?query=${query}`)
+            .then(response => response.json())
+            .then(data => {
+                const resultsContainer = document.getElementById('search-results');
+                resultsContainer.innerHTML = '';
+
+                if (data.groups.length === 0 && data.users.length === 0) {
+                    resultsContainer.innerHTML = '<li>No results found</li>';
+                } else {
+                    data.groups.forEach(group => {
+                        const groupItem = document.createElement('li');
+                        groupItem.classList.add('search-result-item');
+                        groupItem.innerHTML = `<a href="/social/group/${group.id}/">${group.name}</a>`;
+                        resultsContainer.appendChild(groupItem);
+                    });
+
+                    data.users.forEach(user => {
+                        const userItem = document.createElement('li');
+                        userItem.classList.add('search-result-item');
+                        userItem.innerHTML = `<a href="/social/profile/${user.username}/">${user.username}</a>`;
+                        resultsContainer.appendChild(userItem);
+                    });
+                }
+            });
     }
-});
-
-function performSearch() {
-    const query = document.getElementById('search').value;
-
-    // Если длина строки поиска меньше 2 символов, не отправлять запрос
-    if (query.length < 2) {
-        document.getElementById('search-results').innerHTML = '';
-        return;
-    }
-
-    // Отправка GET-запроса с параметром поиска
-    fetch(`/social/search/?query=${query}`)
-        .then(response => response.json())
-        .then(data => {
-            const resultsContainer = document.getElementById('search-results');
-            resultsContainer.innerHTML = '';
-
-            if (data.groups.length === 0 && data.users.length === 0) {
-                resultsContainer.innerHTML = '<li>No results found</li>';
-            } else {
-                // Отображение групп
-                data.groups.forEach(group => {
-                    const groupItem = document.createElement('li');
-                    groupItem.classList.add('search-result-item');
-                    groupItem.innerHTML = `<a href="/social/group/${group.id}/">${group.name}</a>`;
-                    resultsContainer.appendChild(groupItem);
-                });
-
-                // Отображение пользователей
-                data.users.forEach(user => {
-                const userItem = document.createElement('li');
-                userItem.classList.add('search-result-item');
-                userItem.innerHTML = `<a href="/social/profile/${user.username}/">${user.username}</a>`;
-                resultsContainer.appendChild(userItem);
-                });
-            }
-        });
-}
-
 </script>
 
 </body>

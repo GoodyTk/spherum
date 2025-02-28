@@ -133,6 +133,7 @@ class PublicGroup(models.Model):
     admins = models.ManyToManyField(User, related_name="admin_groups", blank=True)
     cover_image = models.ImageField(upload_to='group_covers/', null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    is_banned = models.BooleanField(default=False)
 
     def __str__(self):
         return self.name
@@ -161,3 +162,30 @@ class GroupSubscription(models.Model):
 
     def __str__(self):
         return f"{self.user.username} subscribed to {self.group.name}"
+    
+class Report(models.Model):
+    REPORT_TYPE_CHOICES = [
+        ('user', 'Користувач'),
+        ('group', 'Група'),
+    ]
+
+    STATUS_CHOICES = [
+        ('pending', 'Очікує розгляду'),
+        ('accepted', 'Прийнято'),
+        ('rejected', 'Відхилено'),
+    ]
+
+    reporter = models.ForeignKey(User, on_delete=models.CASCADE, related_name="reports_made")
+    report_type = models.CharField(max_length=10, choices=REPORT_TYPE_CHOICES)
+    reported_user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name="reports_received")
+    reported_group = models.ForeignKey(PublicGroup, on_delete=models.CASCADE, null=True, blank=True, related_name="reports_received")
+    reason = models.TextField()
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending')
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_archived = models.BooleanField(default=False)
+    is_banned = models.BooleanField(default=False)
+
+    def __str__(self):
+        if self.report_type == 'user':
+            return f"Скарга на користувача {self.reported_user.username} від {self.reporter.username}"
+        return f"Скарга на групу {self.reported_group.name} від {self.reporter.username}"
