@@ -9,7 +9,7 @@
     </div>
     {% endif %}
 
-    {% if not group.is_active %}
+    {% if group.is_banned %}
         <p class="banned-message">Група заблокована.</p>
     {% else %}
         {% if user == group.owner or user in group.admins.all %}

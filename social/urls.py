@@ -39,4 +39,5 @@ urlpatterns = [
     path('report/<int:report_id>/archive/', views.archive_report, name='archive_report'),
     path('ban/<int:report_id>/', views.ban_user_or_group, name='ban_user_or_group'),
     path('unban/<int:report_id>/', views.unban_user_or_group, name='unban_user_or_group'),
+    path('notifications/', views.notifications_view, name='notifications'),
 ]

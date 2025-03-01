@@ -189,3 +189,21 @@ class Report(models.Model):
         if self.report_type == 'user':
             return f"Скарга на користувача {self.reported_user.username} від {self.reporter.username}"
         return f"Скарга на групу {self.reported_group.name} від {self.reporter.username}"
+
+class Notification(models.Model):
+    NOTIFICATION_TYPES = [
+        ('comment', 'Комментарий'),
+        ('like', 'Лайк'),
+        ('follow', 'Подписка'),
+        ('mention', 'Упоминание'),
+        ('group_post', 'Пост в группе'),
+    ]
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
+    notification_type = models.CharField(max_length=20, choices=NOTIFICATION_TYPES)
+    message = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_read = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f'{self.user.username} - {self.notification_type} - {self.message}'

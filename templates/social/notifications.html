@@ -1,0 +1,92 @@
+{% block content %}
+<div class="notifications-container">
+    <h2>Уведомления</h2>
+
+    {% if notifications %}
+        <ul class="notifications-list">
+            {% for notification in notifications %}
+                <li class="notification-item {% if not notification.is_read %}unread{% endif %}">
+                    <span class="notification-message">{{ notification.message }}</span>
+                    <span class="notification-time">{{ notification.created_at|date:"d.m.Y H:i" }}</span>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p class="no-notifications">У вас пока нет уведомлений.</p>
+    {% endif %}
+
+    <a href="{% url 'index' %}" class="btn-back">Вернуться назад</a>
+</div>
+
+<style>
+    .notifications-container {
+        max-width: 600px;
+        margin: 20px auto;
+        padding: 20px;
+        background-color: #fff;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        text-align: center;
+    }
+
+    h2 {
+        color: #333;
+        margin-bottom: 20px;
+        font-size: 24px;
+    }
+
+    .notifications-list {
+        list-style: none;
+        padding: 0;
+    }
+
+    .notification-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px;
+        margin-bottom: 10px;
+        background-color: #f9f9f9;
+        border-radius: 5px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        font-size: 16px;
+    }
+
+    .notification-item.unread {
+        background-color: #f0f8ff;
+        font-weight: bold;
+    }
+
+    .notification-message {
+        color: #333;
+    }
+
+    .notification-time {
+        font-size: 14px;
+        color: #777;
+    }
+
+    .no-notifications {
+        color: #777;
+        font-size: 18px;
+        font-style: italic;
+    }
+
+    .btn-back {
+        display: inline-block;
+        margin-top: 20px;
+        padding: 10px 20px;
+        font-size: 16px;
+        background-color: #007BFF;
+        color: white;
+        text-decoration: none;
+        border-radius: 5px;
+        transition: background 0.3s ease;
+    }
+
+    .btn-back:hover {
+        background-color: #0056b3;
+    }
+</style>
+
+{% endblock %}

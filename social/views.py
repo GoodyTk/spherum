@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from .forms import CommentForm, PollCommentForm, PollForm, ProfileUpdateForm, PostForm, PublicGroupForm, ReportForm
 from django.contrib.auth.models import User
-from .models import Choice, Follow, FriendRequest, GroupPost, GroupSubscription, Like, Poll, Post, Profile, Comment, PublicGroup, Report, Vote
+from .models import Choice, Follow, FriendRequest, GroupPost, GroupSubscription, Like, Notification, Poll, Post, Profile, Comment, PublicGroup, Report, Vote
 from django.contrib.auth.decorators import login_required
 from django.views.generic import View
 from django.http import JsonResponse, HttpResponseRedirect
@@ -523,3 +523,23 @@ def custom_login(request):
             messages.error(request, "Неправильний логін або пароль.")
     
     return render(request, 'log_system/login.html')
+
+def notifications_view(request):
+    notifications = Notification.objects.filter(user=request.user).order_by('-created_at')
+
+    notifications.update(is_read=True)
+
+    return render(request, 'social/notifications.html', {'notifications': notifications})
+
+def home_view(request):
+    if request.user.is_authenticated:
+        unread_notifications = Notification.objects.filter(user=request.user, is_read=False).count()
+
+        notifications = Notification.objects.filter(user=request.user).order_by('-created_at')
+
+        return render(request, 'home.html', {
+            'unread_notifications': unread_notifications,
+            'notifications': notifications,
+        })
+    else:
+        return render(request, 'home.html')

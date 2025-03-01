@@ -67,6 +67,22 @@
             background-color: #FFC107;
             color: black;
         }
+        .btn-info {
+            background-color: #17A2B8;
+            color: white;
+            position: relative;
+        }
+        .notification-count {
+            position: absolute;
+            top: -5px;
+            right: -10px;
+            background-color: #DC3545;
+            color: white;
+            border-radius: 50%;
+            padding: 5px 10px;
+            font-size: 12px;
+            font-weight: bold;
+        }
         .search-container {
             margin: 20px 0;
         }
@@ -116,7 +132,11 @@
         <div class="buttons">
             <a href="{% url 'logout' %}" class="btn btn-danger">Logout</a>
             <a href="{% url 'my_groups' %}" class="btn btn-success">My Groups</a>
-            
+            <a href="{% url 'notifications' %}" class="btn btn-info">🔔 Уведомления
+                {% if unread_notifications > 0 %}
+                    <span class="notification-count">{{ unread_notifications }}</span>  <!-- Количество непрочитанных уведомлений -->
+                {% endif %}
+            </a>
             {% if user.is_staff %}
             <a href="{% url 'admin_reports' %}" class="btn btn-warning">Reports</a>
             {% endif %}
